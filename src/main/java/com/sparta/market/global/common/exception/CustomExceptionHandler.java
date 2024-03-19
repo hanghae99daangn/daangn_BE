@@ -1,6 +1,6 @@
 package com.sparta.market.global.common.exception;
 
-import com.sparta.hanghaeboard.global.common.dto.ResponseDto;
+import com.sparta.market.global.common.dto.ResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;

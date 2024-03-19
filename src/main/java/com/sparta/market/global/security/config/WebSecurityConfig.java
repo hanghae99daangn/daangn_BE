@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -83,9 +84,11 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests((authorizeHttpRequests) ->
                 authorizeHttpRequests
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                        .requestMatchers(PUBLIC_URL).permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/user/**").permitAll()
-                        .requestMatchers(PUBLIC_URL).permitAll()
+                        .requestMatchers(HttpMethod.GET,"/trades/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,"/community/**").permitAll()
                         .anyRequest().authenticated()
         );
 

@@ -22,7 +22,7 @@ public class Community {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long CommunityId;
+    private Long communityId;
 
     @Column
     @Schema(name = "community post title", description = "커뮤니티 게시글 제목", example = "오늘 저녁 뭐 먹지?")

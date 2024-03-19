@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Tag(name = "Community Entity", description = "커뮤니티 게시글 엔티티 클래스")
@@ -43,7 +43,7 @@ public class Community {
 
     @CreatedDate
     @Schema(name = "community post created time", description = "커뮤니티 게시글 작성 시간")
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     @Builder
     public Community(String title, String content, User user) {

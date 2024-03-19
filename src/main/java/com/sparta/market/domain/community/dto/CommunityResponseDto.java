@@ -3,7 +3,7 @@ package com.sparta.market.domain.community.dto;
 import com.sparta.market.domain.community.entity.Community;
 import lombok.Getter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 public class CommunityResponseDto {
@@ -12,7 +12,7 @@ public class CommunityResponseDto {
     private String title;
     private String nickName;
     private String contents;
-    private LocalDate createdAt;
+    private LocalDateTime createdAt;
 
     public CommunityResponseDto(Community community) {
         this.communityId = community.getCommunityId();

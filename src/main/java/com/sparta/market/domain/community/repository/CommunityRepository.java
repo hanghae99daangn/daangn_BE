@@ -1,6 +1,6 @@
-package com.sparta.market.community.repository;
+package com.sparta.market.domain.community.repository;
 
-import com.sparta.market.community.entity.Community;
+import com.sparta.market.domain.community.entity.Community;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CommunityRepository extends JpaRepository<Community, Long> {

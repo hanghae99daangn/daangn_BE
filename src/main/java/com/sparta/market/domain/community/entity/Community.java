@@ -1,4 +1,4 @@
-package com.sparta.market.community.entity;
+package com.sparta.market.domain.community.entity;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.*;

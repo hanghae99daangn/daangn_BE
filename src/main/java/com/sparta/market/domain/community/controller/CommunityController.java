@@ -1,4 +1,4 @@
-package com.sparta.market.community.controller;
+package com.sparta.market.domain.community.controller;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;

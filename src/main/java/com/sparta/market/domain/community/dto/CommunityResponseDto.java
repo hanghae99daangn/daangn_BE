@@ -1,4 +1,4 @@
-package com.sparta.market.community.dto;
+package com.sparta.market.domain.community.dto;
 
 import lombok.Getter;
 

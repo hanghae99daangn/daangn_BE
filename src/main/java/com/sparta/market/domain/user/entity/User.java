@@ -28,4 +28,10 @@ public class User {
 
     @Column (nullable = false, unique = true)
     private String phoneNumber;
+
+    /*커뮤니티 게시글 테스트용 Builder 코드*/
+    @Builder
+    public User (String email) {
+        this.email = email;
+    }
 }

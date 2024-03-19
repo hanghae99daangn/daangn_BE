@@ -28,4 +28,11 @@ public class User {
 
     @Column (nullable = false, unique = true)
     private String phoneNumber;
+
+    @Column (nullable = false)
+    private String address;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private UserRoleEnum role;
 }

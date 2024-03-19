@@ -2,6 +2,7 @@ package com.sparta.market.global.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.market.domain.user.dto.LoginRequestDto;
+import com.sparta.market.domain.user.entity.UserRoleEnum;
 import com.sparta.market.global.security.jwt.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -48,10 +49,11 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
 
         String email = ((UserDetailsImpl) authResult.getPrincipal()).getUsername();
+        UserRoleEnum role = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getRole();
         Long userId = ((UserDetailsImpl) authResult.getPrincipal()).getUser().getId(); // userId 추출
         String nickname = (((UserDetailsImpl) authResult.getPrincipal()).getUser().getNickname());
 
-        String token = jwtUtil.createToken(email);
+        String token = jwtUtil.createToken(email, role);
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
 
         log.info("사용자 '{}'의 로그인 성공", email);
@@ -61,7 +63,8 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         String responseBody = "로그인을 완료했습니다. " + "\n"
                 + "사용자 아이디: " + userId + "\n"
                 + "사용자 email: " + email + "\n"
-                + "사용자 nickname: " + nickname + "\n";
+                + "사용자 nickname: " + nickname + "\n"
+                + "사용자 role: " + role;
         response.getWriter().write(responseBody);
     }
 

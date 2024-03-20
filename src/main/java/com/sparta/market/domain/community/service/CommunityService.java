@@ -33,7 +33,7 @@ public class CommunityService {
     @Transactional
     public CommunityResponseDto createCommunityPost(CommunityRequestDto requestDto) {
         /*유저 정보 검증*/
-        User user =getAuthenticatedUser();
+        User user = getAuthenticatedUser();
 
         /*Builder 사용 entity 객체 생성*/
         Community community = Community.builder()
@@ -63,6 +63,19 @@ public class CommunityService {
 
         /* 수정된 게시글 정보 반환*/
         return new CommunityResponseDto(community);
+    }
+
+    /* 커뮤니티 게시글 삭제 로직*/
+    @Transactional
+    public void deleteCommunityPost(Long communityId) {
+        /* 유저 정보 검증*/
+        User user = getAuthenticatedUser();
+
+        /* 게시글 및 게시글에 대한 유저 권한 검증 */
+        Community community = validatePostOwnership(communityId, user);
+
+        /* 게시글 삭제*/
+        communityRepository.delete(community);
     }
 
     /* 검증 메서드 필드*/

@@ -15,6 +15,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Optional;
@@ -45,13 +48,18 @@ public class CommunityServiceTest {
         String email = "user@example.com";
         CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content");
         User user = new User(); // 유저 객체 설정 필요
-        UserDetails userDetails = mock(UserDetails.class);
-        when(userDetails.getUsername()).thenReturn(email);
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+
+        when(authentication.getName()).thenReturn(email);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(communityRepository.save(any(Community.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // 실행
-        CommunityResponseDto result = communityService.createCommunityPost(requestDto, userDetails);
+        CommunityResponseDto result = communityService.createCommunityPost(requestDto);
 
         // 검증
         assertNotNull(result);
@@ -67,14 +75,21 @@ public class CommunityServiceTest {
     void createCommunityPost_Failure_UserNotFound() {
         // 준비
         CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content");
-        UserDetails userDetails = mock(UserDetails.class);
-        when(userDetails.getUsername()).thenReturn("nonexistent@example.com");
-        when(userRepository.findByEmail("nonexistent@example.com")).thenReturn(Optional.empty());
+        String nonexistentEmail = "nonexistent@example.com";
+
+        Authentication authentication = mock(Authentication.class);
+        SecurityContext securityContext = mock(SecurityContext.class);
+
+        when(authentication.getName()).thenReturn(nonexistentEmail);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
+
+        when(userRepository.findByEmail(nonexistentEmail)).thenReturn(Optional.empty());
 
         // 실행 & 검증
-        assertThrows(CustomException.class, () -> communityService.createCommunityPost(requestDto, userDetails));
+        assertThrows(CustomException.class, () -> communityService.createCommunityPost(requestDto));
 
-        verify(userRepository, times(1)).findByEmail("nonexistent@example.com");
+        verify(userRepository, times(1)).findByEmail(nonexistentEmail);
         verify(communityRepository, never()).save(any(Community.class));
     }
 }

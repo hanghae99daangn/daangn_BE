@@ -13,7 +13,10 @@ public enum ErrorCode {
     FORBIDDEN("FORBIDDEN", "접근 권한이 없습니다. ADMIN에게 문의하세요.", HttpStatus.FORBIDDEN),
     UNAUTHORIZED("UNAUTHORIZED", "로그인 후 이용할 수 있습니다. 계정이 없다면 회원 가입을 진행해주세요.", HttpStatus.UNAUTHORIZED),
     NOT_EXIST_COMMENT("NOT_EXIST_COMMENT", "해당 댓글은 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_POST("NOT_EXIST_POST", "해당 글은 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
     NOT_YOUR_POST("NOT_YOUR_POST","해당 게시글을 작성한 유저가 아닙니다." ,HttpStatus.BAD_REQUEST),
+    NOT_YOUR_IMG("NOT_YOUR_IMG", "imgId를 확인해주세요", HttpStatus.BAD_REQUEST),
+    NOT_EXIST_IMG("NOT_EXIST_IMG", "해당 사진이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
     DUPLICATED_PHONE_NUMBER("DUPLICATED_PHONE_NUMBER", "중복된 전화번호입니다.", HttpStatus.BAD_REQUEST);
 
 

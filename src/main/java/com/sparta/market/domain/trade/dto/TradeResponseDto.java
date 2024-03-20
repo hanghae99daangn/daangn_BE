@@ -151,7 +151,9 @@ public class TradeResponseDto {
         private int price;
         private String contactPlace;
         private DetailPostImageResponseDto postImage;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime modifiedAt;
 
         public GetPostListResponseDto(TradePost post) {
@@ -187,7 +189,9 @@ public class TradeResponseDto {
         private int price;
         private String contactPlace;
         private DetailPostImageResponseDto postImage;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime createdAt;
+        @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
         private LocalDateTime modifiedAt;
 
         public GetCategoryPostListResponseDto(TradePost post) {

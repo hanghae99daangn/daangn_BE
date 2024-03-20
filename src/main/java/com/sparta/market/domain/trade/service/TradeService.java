@@ -16,6 +16,9 @@ import com.sparta.market.global.common.exception.CustomException;
 import com.sparta.market.global.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -137,8 +140,11 @@ public class TradeService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetPostListResponseDto> getAllPostList() {
-        List<TradePost> postList = tradePostRepository.findAll();
+    public List<GetPostListResponseDto> getAllPostList(int page) {
+        int pageNum = Math.max(page - 1, 0);
+        Pageable pageable = PageRequest.of(pageNum, 30);
+        Page<TradePost> postList = tradePostRepository.findAll(pageable);
+
         return postList.stream().map(GetPostListResponseDto::new).toList();
     }
 
@@ -152,8 +158,10 @@ public class TradeService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetCategoryPostListResponseDto> getCategoryPostList(String category) {
-        List<TradePost> categoryPostList = tradePostRepository.findAllByCategory(category);
+    public List<GetCategoryPostListResponseDto> getCategoryPostList(String category, int page) {
+        int pageNum = Math.max(page - 1, 0);
+        Pageable pageable = PageRequest.of(pageNum, 30);
+        Page<TradePost> categoryPostList = tradePostRepository.findAllByCategory(category, pageable);
         return categoryPostList.stream().map(GetCategoryPostListResponseDto::new).toList();
     }
 

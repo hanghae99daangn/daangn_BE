@@ -1,9 +1,7 @@
 package com.sparta.market.domain.trade.controller;
 
-import com.sparta.market.domain.trade.dto.TradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.CreateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.UpdateTradeRequestDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto;
 import com.sparta.market.domain.trade.dto.TradeResponseDto.CreateTradeResponseDto;
 import com.sparta.market.domain.trade.dto.TradeResponseDto.GetPostListResponseDto;
 import com.sparta.market.domain.trade.dto.TradeResponseDto.GetPostResponseDto;
@@ -13,6 +11,7 @@ import com.sparta.market.global.common.dto.ResponseDto;
 import com.sparta.market.global.security.config.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -36,7 +35,7 @@ public class TradeController {
             description = "게시글 등록 -> add String Item을 클릭해서 이미지를 업로드하세요!")
     @PostMapping(value = "/trades", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> createTrade(@RequestPart(value = "files", required = false) MultipartFile[] multipartFileList,
-                                         @RequestPart(value = "createTradeRequestDto") CreateTradeRequestDto requestDto,
+                                         @Valid @RequestPart(value = "createTradeRequestDto") CreateTradeRequestDto requestDto,
                                          @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
         CreateTradeResponseDto responseDto = tradeService.createTrade(requestDto, multipartFileList, userDetails.getUser());
         return ResponseEntity.ok().body(ResponseDto.success("거래 글 등록 성공", responseDto));
@@ -46,7 +45,7 @@ public class TradeController {
             description = "게시글 수정: title, contents, category, file")
     @PostMapping(value = "/trades/{tradeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<?> updateTrade(@RequestPart(value = "files", required = false) MultipartFile[] multipartFileList,
-                                         @RequestPart(value = "updateTradeRequestDto") UpdateTradeRequestDto requestDto,
+                                         @Valid @RequestPart(value = "updateTradeRequestDto") UpdateTradeRequestDto requestDto,
                                          @PathVariable Long tradeId,
                                          @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
         UpdateTradeResponseDto responseDto = tradeService.updateTrade(tradeId, requestDto, multipartFileList, userDetails.getUser());

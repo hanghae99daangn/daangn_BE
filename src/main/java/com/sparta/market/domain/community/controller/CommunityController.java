@@ -47,6 +47,16 @@ public class CommunityController {
     public ResponseEntity<?> deleteCommunityPost(@PathVariable Long communityId) {
 
         communityService.deleteCommunityPost(communityId);
+
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 글 삭제 성공", "엘든링"));
+    }
+
+    @Operation(summary = "선택한 커뮤니티 게시글 조회", description = "선택한 커뮤니티 게시글의 정보를 조회합니다.")
+    @GetMapping("/community/{communityId}")
+    public ResponseEntity<?> findCommunityPost(@PathVariable Long communityId) {
+
+        CommunityResponseDto responseDto = communityService.findCommunityPost(communityId);
+
+        return ResponseEntity.ok().body(ResponseDto.success("선택한 게시글 조회 성공", responseDto));
     }
 }

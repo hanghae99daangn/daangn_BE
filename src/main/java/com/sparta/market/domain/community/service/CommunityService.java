@@ -78,6 +78,15 @@ public class CommunityService {
         communityRepository.delete(community);
     }
 
+    /* 선택한 커뮤니티 게시글 조회 로직*/
+    @Transactional(readOnly = true)
+    public CommunityResponseDto findCommunityPost(Long communityId) {
+        /* 조회 시 유저 정보 검증 x*/
+        Community community = validateCommunity(communityId);
+
+        return new CommunityResponseDto(community);
+    }
+
     /* 검증 메서드 필드*/
     /*유저 정보 검증 메서드*/
     private User getAuthenticatedUser() {
@@ -99,5 +108,11 @@ public class CommunityService {
         }
 
         return community;
+    }
+
+    /* 게시글 검증 메서드*/
+    private Community validateCommunity(Long communityId) {
+        return communityRepository.findByCommunityId(communityId)
+                .orElseThrow(() -> new CustomException(NOT_EXIST_POST));
     }
 }

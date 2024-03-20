@@ -3,6 +3,7 @@ package com.sparta.market.domain.user.service;
 import com.sparta.market.domain.user.dto.SignupRequestDto;
 import com.sparta.market.domain.user.dto.SignupResponseDto;
 import com.sparta.market.domain.user.entity.User;
+import com.sparta.market.domain.user.entity.UserRoleEnum;
 import com.sparta.market.domain.user.repository.UserRepository;
 import com.sparta.market.global.common.exception.CustomException;
 import com.sparta.market.global.common.exception.ErrorCode;
@@ -27,7 +28,7 @@ public class UserService {
         }
         String password = passwordEncoder.encode(requestDto.getPassword());
 
-        User user = requestDto.toEntity(password);
+        User user = requestDto.toEntity(password, UserRoleEnum.USER);
         User savedUser = userRepository.save(user);
 
         return new SignupResponseDto(savedUser);

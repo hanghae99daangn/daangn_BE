@@ -29,6 +29,13 @@ public class User {
     @Column (nullable = false, unique = true)
     private String phoneNumber;
 
+    @Column (nullable = false)
+    private String address;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private UserRoleEnum role;
+
     /*커뮤니티 게시글 테스트용 Builder 코드*/
     @Builder
     public User (String email) {

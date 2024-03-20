@@ -1,5 +1,6 @@
 package com.sparta.market.domain.community.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sparta.market.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -45,6 +46,7 @@ public class Community {
 
     @CreatedDate
     @Schema(name = "community post created time", description = "커뮤니티 게시글 작성 시간")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
 
     @Builder

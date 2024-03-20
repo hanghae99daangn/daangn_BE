@@ -9,6 +9,10 @@ import com.sparta.market.domain.user.repository.UserRepository;
 import com.sparta.market.global.common.exception.CustomException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -85,6 +89,32 @@ public class CommunityService {
         Community community = validateCommunity(communityId);
 
         return new CommunityResponseDto(community);
+    }
+
+    /* 전체 커뮤니티 게시글 목록 조회 로직*/
+    @Transactional(readOnly = true)
+    public Page<CommunityResponseDto> getAllCommunity(int page, boolean isAsc) {
+        /* 입력 값 유효성 검증*/
+        try {
+            if (page < 0) {
+                throw new CustomException(VALIDATION_ERROR);
+            }
+
+            /* 정렬 기준 선택, 페이지 크기 선택*/
+            Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+            Sort sort = Sort.by(direction, "createdAt");
+            Pageable pageable = PageRequest.of(page, 30, sort);
+
+            /* 페이징 처리*/
+            Page<Community> communityPage = communityRepository.findAll(pageable);
+
+            /* 데이터 반환*/
+            return communityPage.map(CommunityResponseDto::new);
+        } catch (CustomException e) {
+
+            /* 유효하지 않은 정렬 필드 및 페이지 인덱스에 대한 예외 처리*/
+            throw new CustomException(VALIDATION_ERROR);
+        }
     }
 
     /* 검증 메서드 필드*/

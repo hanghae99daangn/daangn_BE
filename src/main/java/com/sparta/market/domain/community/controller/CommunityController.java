@@ -7,6 +7,7 @@ import com.sparta.market.global.common.dto.ResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,5 +59,15 @@ public class CommunityController {
         CommunityResponseDto responseDto = communityService.findCommunityPost(communityId);
 
         return ResponseEntity.ok().body(ResponseDto.success("선택한 게시글 조회 성공", responseDto));
+    }
+
+    @Operation(summary = "전체 커뮤니티 게시글 조회", description = "전체 커뮤니티 게시글 목록을 조회합니다.")
+    @GetMapping("/community")
+    public ResponseEntity<?> getAllCommunity(@RequestParam("isAsc") boolean isAsc,
+                                             @RequestParam("page") int page) {
+
+        return ResponseEntity.ok().body(
+                ResponseDto.success("전체 커뮤니티 게시글 조회 성공",
+                        communityService.getAllCommunity(page - 1, isAsc)));
     }
 }

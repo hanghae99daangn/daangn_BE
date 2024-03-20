@@ -2,10 +2,8 @@ package com.sparta.market.domain.trade.controller;
 
 import com.sparta.market.domain.trade.dto.TradeRequestDto.CreateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.UpdateTradeRequestDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.CreateTradeResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.GetPostListResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.GetPostResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.UpdateTradeResponseDto;
+import com.sparta.market.domain.trade.dto.TradeResponseDto;
+import com.sparta.market.domain.trade.dto.TradeResponseDto.*;
 import com.sparta.market.domain.trade.service.TradeService;
 import com.sparta.market.global.common.dto.ResponseDto;
 import com.sparta.market.global.security.config.UserDetailsImpl;
@@ -74,5 +72,13 @@ public class TradeController {
     public ResponseEntity<?> getDetailPost(@PathVariable Long tradeId) {
         GetPostResponseDto responseDto = tradeService.getDetailPost(tradeId);
         return ResponseEntity.ok().body(ResponseDto.success("전체 판매글 조회 성공", responseDto));
+    }
+
+    @Operation(summary = "카테고리별 판매글 전체 조회",
+            description = "조회시, 글에 저장된 첫 번째 이미지 출력를 출력합니다!")
+    @GetMapping("/trades/category")
+    public ResponseEntity<?> getCategoryPostList(@RequestParam String category){
+        List<GetCategoryPostListResponseDto> categoryList = tradeService.getCategoryPostList(category);
+        return ResponseEntity.ok().body(ResponseDto.success("카테고리별 판매글 조회 성공", categoryList));
     }
 }

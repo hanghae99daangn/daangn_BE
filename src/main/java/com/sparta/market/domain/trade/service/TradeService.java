@@ -4,10 +4,7 @@ import com.sparta.market.domain.trade.dto.TradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.CreateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.UpdateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.CreateTradeResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.GetPostListResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.GetPostResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.UpdateTradeResponseDto;
+import com.sparta.market.domain.trade.dto.TradeResponseDto.*;
 import com.sparta.market.domain.trade.entity.TradePost;
 import com.sparta.market.domain.trade.entity.TradePostImage;
 import com.sparta.market.domain.trade.repository.TradePostImageRepository;
@@ -150,5 +147,11 @@ public class TradeService {
         );
         post.updateHit();
         return new GetPostResponseDto(post);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetCategoryPostListResponseDto> getCategoryPostList(String category) {
+        List<TradePost> categoryPostList = tradePostRepository.findAllByCategory(category);
+        return categoryPostList.stream().map(GetCategoryPostListResponseDto::new).toList();
     }
 }

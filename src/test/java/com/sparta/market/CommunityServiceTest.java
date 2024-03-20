@@ -3,6 +3,7 @@ package com.sparta.market;
 import com.sparta.market.domain.community.dto.CommunityRequestDto;
 import com.sparta.market.domain.community.dto.CommunityResponseDto;
 import com.sparta.market.domain.community.entity.Community;
+import com.sparta.market.domain.community.entity.CommunityCategory;
 import com.sparta.market.domain.community.repository.CommunityRepository;
 import com.sparta.market.domain.community.service.CommunityService;
 import com.sparta.market.domain.user.entity.User;
@@ -54,7 +55,7 @@ public class CommunityServiceTest {
     void createCommunityPost_Success() {
         // 준비
         String email = "user@example.com";
-        CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content");
+        CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content", CommunityCategory.SAMPLE);
         User user = new User(); // 유저 객체 설정 필요
         Authentication authentication = mock(Authentication.class);
         SecurityContext securityContext = mock(SecurityContext.class);
@@ -83,7 +84,7 @@ public class CommunityServiceTest {
     @Disabled
     void createCommunityPost_Failure_UserNotFound() {
         // 준비
-        CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content");
+        CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content", CommunityCategory.SAMPLE);
         String nonexistentEmail = "nonexistent@example.com";
 
         Authentication authentication = mock(Authentication.class);
@@ -108,9 +109,9 @@ public class CommunityServiceTest {
     void updateCommunityPost_Success() {
         // 준비
         Long communityId = 1L;
-        CommunityRequestDto requestDto = new CommunityRequestDto("Updated Title", "Updated Content");
+        CommunityRequestDto requestDto = new CommunityRequestDto("Updated Title", "Updated Content", CommunityCategory.SAMPLE);
         User user = new User(1L); // 적절한 User 객체 설정 필요
-        Community community = new Community("Title", "Content", user); // 적절한 Community 객체 설정 필요
+        Community community = new Community("Title", "Content", user, CommunityCategory.SAMPLE); // 적절한 Community 객체 설정 필요
 
         Authentication authentication = mock(Authentication.class);
         SecurityContext securityContext = mock(SecurityContext.class);

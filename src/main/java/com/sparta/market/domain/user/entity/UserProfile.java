@@ -1,6 +1,5 @@
 package com.sparta.market.domain.user.entity;
 
-import com.sparta.market.domain.trade.entity.TradePost;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

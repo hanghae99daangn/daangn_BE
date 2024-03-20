@@ -49,16 +49,22 @@ public class Community {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Schema(name = "community post category", description = "커뮤니티 게시글 카테고리")
+    private CommunityCategory category;
+
     @Builder
-    public Community(String title, String content, User user) {
+    public Community(String title, String content, User user, CommunityCategory category) {
         this.title = title;
         this.content = content;
         this.user = user;
+        this.category = category;
     }
 
-    public void updatePost(String title, String content) {
+    public void updatePost(String title, String content, CommunityCategory category) {
         this.title = title;
         this.content = content;
+        this.category = category;
     }
 
     /* 테스트 코드용 Builder 코드*/

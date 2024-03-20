@@ -3,6 +3,7 @@ package com.sparta.market.domain.community.service;
 import com.sparta.market.domain.community.dto.CommunityRequestDto;
 import com.sparta.market.domain.community.dto.CommunityResponseDto;
 import com.sparta.market.domain.community.entity.Community;
+import com.sparta.market.domain.community.entity.CommunityCategory;
 import com.sparta.market.domain.community.repository.CommunityRepository;
 import com.sparta.market.domain.user.entity.User;
 import com.sparta.market.domain.user.repository.UserRepository;
@@ -44,6 +45,7 @@ public class CommunityService {
                 .title(requestDto.getTitle())
                 .content(requestDto.getContent())
                 .user(user)
+                .category(requestDto.getCategory())
                 .build();
 
         /*DB에 Community Post 정보 저장*/
@@ -63,7 +65,7 @@ public class CommunityService {
         Community community = validatePostOwnership(communityId, user);
 
         /* 게시글 수정*/
-        community.updatePost(requestDto.getTitle(), requestDto.getContent());
+        community.updatePost(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory());
 
         /* 수정된 게시글 정보 반환*/
         return new CommunityResponseDto(community);
@@ -94,28 +96,27 @@ public class CommunityService {
     /* 전체 커뮤니티 게시글 목록 조회 로직*/
     @Transactional(readOnly = true)
     public Page<CommunityResponseDto> getAllCommunity(int page, boolean isAsc) {
-        /* 입력 값 유효성 검증*/
-        try {
-            if (page < 0) {
-                throw new CustomException(VALIDATION_ERROR);
-            }
+        /* pageable 객체 생성*/
+        Pageable pageable = validateAndCreatePageable(page, isAsc);
 
-            /* 정렬 기준 선택, 페이지 크기 선택*/
-            Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
-            Sort sort = Sort.by(direction, "createdAt");
-            Pageable pageable = PageRequest.of(page, 30, sort);
+        /* 페이징 처리*/
+        Page<Community> communityPage = communityRepository.findAll(pageable);
 
-            /* 페이징 처리*/
-            Page<Community> communityPage = communityRepository.findAll(pageable);
-
-            /* 데이터 반환*/
-            return communityPage.map(CommunityResponseDto::new);
-        } catch (CustomException e) {
-
-            /* 유효하지 않은 정렬 필드 및 페이지 인덱스에 대한 예외 처리*/
-            throw new CustomException(VALIDATION_ERROR);
-        }
+        /* 데이터 반환*/
+        return communityPage.map(CommunityResponseDto::new);
     }
+
+    public Page<CommunityResponseDto> getCommunityByCategory(int page, boolean isAsc, CommunityCategory category) {
+        /* pageable 객체 생성*/
+        Pageable pageable = validateAndCreatePageable(page, isAsc);
+
+        /* 카테고리별 페이징 처리*/
+        Page<Community> communityPage = communityRepository.findByCategory(category, pageable);
+
+        /* 데이터 반환*/
+        return communityPage.map(CommunityResponseDto::new);
+    }
+
 
     /* 검증 메서드 필드*/
     /*유저 정보 검증 메서드*/
@@ -144,5 +145,14 @@ public class CommunityService {
     private Community validateCommunity(Long communityId) {
         return communityRepository.findByCommunityId(communityId)
                 .orElseThrow(() -> new CustomException(NOT_EXIST_POST));
+    }
+
+    /* 입력 값 검증과 페이지 설정 메서드*/
+    private Pageable validateAndCreatePageable(int page, boolean isAsc) {
+        if (page < 0) {
+            throw new CustomException(VALIDATION_ERROR);
+        }
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        return PageRequest.of(page, 30, Sort.by(direction, "createdAt"));
     }
 }

@@ -80,4 +80,12 @@ public class TradeController {
         List<GetCategoryPostListResponseDto> categoryList = tradeService.getCategoryPostList(category);
         return ResponseEntity.ok().body(ResponseDto.success("카테고리별 판매글 조회 성공", categoryList));
     }
+
+    @Operation(summary = "좋아요 기능",
+            description = "해당 API 호출시, true, false 반환")
+    @PostMapping("/trades/likes/{tradeId}")
+    public ResponseEntity<?> updateLike(@PathVariable Long tradeId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        boolean check = tradeService.updateLike(tradeId, userDetails.getUser());
+        return ResponseEntity.ok().body(ResponseDto.success("좋아요 처리 완료", check));
+    }
 }

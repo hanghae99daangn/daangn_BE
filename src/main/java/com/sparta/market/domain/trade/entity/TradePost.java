@@ -1,6 +1,5 @@
 package com.sparta.market.domain.trade.entity;
 
-import com.sparta.market.domain.trade.dto.TradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.UpdateTradeRequestDto;
 import com.sparta.market.domain.user.entity.User;
 import com.sparta.market.global.common.entity.Timestamped;

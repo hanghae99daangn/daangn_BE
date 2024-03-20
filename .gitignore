@@ -203,6 +203,7 @@ gradle-app.setting
 ### Plus ###
 application.properties
 application.yml
+.idea/
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,intellij,gradle
 /.idea/.name

@@ -1,8 +1,7 @@
 package com.sparta.market.global.aws.service;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +29,10 @@ public class S3UploadService {
         metadata.setContentType(multipartFile.getContentType());
 
         amazonS3.putObject(bucket, filename, multipartFile.getInputStream(), metadata);
+
+        // 객체의 ACL을 공개로 설정
+        amazonS3.setObjectAcl(bucket, filename, CannedAccessControlList.PublicRead);
+
         // 한글 깨짐 방지
         return URLDecoder.decode(amazonS3.getUrl(bucket, filename).toString(), StandardCharsets.UTF_8);
     }

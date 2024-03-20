@@ -174,4 +174,40 @@ public class TradeResponseDto {
             }
         }
     }
+
+    @NoArgsConstructor
+    @Getter
+    public static class GetCategoryPostListResponseDto {
+        private Long id;
+        private String nickname;
+        private String title;
+        private String content;
+        private String category;
+        private int hit;
+        private int price;
+        private String contactPlace;
+        private DetailPostImageResponseDto postImage;
+        private LocalDateTime createdAt;
+        private LocalDateTime modifiedAt;
+
+        public GetCategoryPostListResponseDto(TradePost post) {
+            this.id = post.getId();
+            this.nickname = post.getUser().getNickname();
+            this.title = post.getTitle();
+            this.content = post.getContent();
+            this.category = post.getCategory();
+            this.hit = post.getHit();
+            this.price = post.getPrice();
+            this.contactPlace = post.getContactPlace();
+            this.createdAt = post.getCreatedAt();
+            this.modifiedAt = post.getModifiedAt();
+            if (!post.getPostImageList().isEmpty()) {
+                this.postImage = post.getPostImageList()
+                        .stream()
+                        .findFirst()
+                        .map(DetailPostImageResponseDto::new)
+                        .orElse(null);
+            }
+        }
+    }
 }

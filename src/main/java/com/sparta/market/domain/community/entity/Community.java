@@ -40,7 +40,7 @@ public class Community {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL)
     @Schema(name = "community post image id", description = "커뮤니티 게시글 이미지 ID 리스트")
     private List<CommunityImage> communityImages;
 

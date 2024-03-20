@@ -4,12 +4,15 @@ import com.sparta.market.domain.community.entity.Community;
 import com.sparta.market.domain.community.entity.CommunityCategory;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class CommunityResponseDto {
+@NoArgsConstructor
+public class GetCommunityResponseDto {
 
     private Long communityId;
     private String title;
@@ -17,29 +20,17 @@ public class CommunityResponseDto {
     private String contents;
     private CommunityCategory category;
     private LocalDateTime createdAt;
-    private List<String> imageNameList;
-    private List<String> imageUrlList;
+    private List<DetailCommunityImageResponseDto> communityImageList = new ArrayList<>();
 
     @Builder
-    public CommunityResponseDto(Community community) {
+    public GetCommunityResponseDto(Community community) {
         this.communityId = community.getCommunityId();
         this.title = community.getTitle();
         this.nickname = community.getUser().getNickname();
         this.contents = community.getContent();
         this.category = community.getCategory();
         this.createdAt = community.getCreatedAt();
-    }
-
-    @Builder
-    public CommunityResponseDto(Community community, List<String> urlList, List<String> nameList) {
-        this.communityId = community.getCommunityId();
-        this.title = community.getTitle();
-        this.nickname = community.getUser().getNickname();
-        this.contents = community.getContent();
-        this.category = community.getCategory();
-        this.createdAt = community.getCreatedAt();
-        this.imageNameList = nameList;
-        this.imageUrlList = urlList;
+        this.communityImageList = community.getCommunityImages().stream().map(DetailCommunityImageResponseDto::new).toList();
     }
 
 }

@@ -2,20 +2,21 @@ package com.sparta.market.domain.community.controller;
 
 import com.sparta.market.domain.community.dto.CommunityRequestDto;
 import com.sparta.market.domain.community.dto.CommunityResponseDto;
+import com.sparta.market.domain.community.dto.GetCommunityResponseDto;
 import com.sparta.market.domain.community.entity.CommunityCategory;
 import com.sparta.market.domain.community.service.CommunityService;
 import com.sparta.market.global.common.dto.ResponseDto;
 import com.sparta.market.global.common.exception.CustomException;
-import com.sparta.market.global.common.exception.ErrorCode;
+import io.jsonwebtoken.io.IOException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.sparta.market.global.common.exception.ErrorCode.INVALID_CATEGORY_INPUT;
-import static com.sparta.market.global.common.exception.ErrorCode.VALIDATION_ERROR;
 
 @Slf4j(topic = "Community Controller")
 @Tag(name = "Community Controller", description = "커뮤니티 게시글 컨트롤러")
@@ -29,22 +30,24 @@ public class CommunityController {
     }
 
     @Operation(summary = "커뮤니티 게시글 등록", description = "커뮤니티 게시글을 등록합니다.")
-    @PostMapping("/community")
+    @PostMapping(value = "/community", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     /*@RequestPart 사용 이미지 업로드 추가 리팩토링 예정*/
-    public ResponseEntity<?> createCommunityPost(@RequestBody CommunityRequestDto requestDto) {
+    public ResponseEntity<?> createCommunityPost(@RequestPart(value = "files", required = false)MultipartFile[] multipartFilesList,
+                                                 @RequestPart(value = "CommunityRequestDto") CommunityRequestDto requestDto) throws IOException, java.io.IOException {
 
-        CommunityResponseDto responseDto = communityService.createCommunityPost(requestDto);
+        CommunityResponseDto responseDto = communityService.createCommunityPost(requestDto, multipartFilesList);
 
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 글 작성 성공", responseDto));
     }
 
     @Operation(summary = "커뮤니티 게시글 수정", description = "등록한 커뮤니티 게시글의 내용을 수정할 수 있습니다.")
-    @PostMapping("/community/{communityId}")
+    @PostMapping(value = "/community/{communityId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     /*@RequestPart 사용 업로드 이미지 수정 리팩토링 예정*/
     public ResponseEntity<?> updateCommunityPost(@PathVariable Long communityId,
-                                                 @RequestBody CommunityRequestDto requestDto) {
+                                                 @RequestPart(value = "files", required = false) MultipartFile[] multipartFilesList,
+                                                 @RequestPart(value = "CommunityRequestDto") CommunityRequestDto requestDto) throws IOException, java.io.IOException {
 
-        CommunityResponseDto responseDto = communityService.updateCommunityPost(communityId, requestDto);
+        CommunityResponseDto responseDto = communityService.updateCommunityPost(communityId, requestDto, multipartFilesList);
 
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 글 수정 성공", responseDto));
     }
@@ -62,7 +65,7 @@ public class CommunityController {
     @GetMapping("/community/{communityId}")
     public ResponseEntity<?> findCommunityPost(@PathVariable Long communityId) {
 
-        CommunityResponseDto responseDto = communityService.findCommunityPost(communityId);
+        GetCommunityResponseDto responseDto = communityService.findCommunityPost(communityId);
 
         return ResponseEntity.ok().body(ResponseDto.success("선택한 게시글 조회 성공", responseDto));
     }

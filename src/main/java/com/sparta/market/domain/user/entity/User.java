@@ -35,4 +35,14 @@ public class User {
     @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
+
+    /*커뮤니티 게시글 테스트용 Builder 코드*/
+    @Builder
+    public User (String email) {
+        this.email = email;
+    }
+    @Builder
+    public User (Long id) {
+        this.id = id;
+    }
 }

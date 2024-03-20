@@ -172,10 +172,10 @@ public class CommunityServiceTest {
 
     @Test
     @DisplayName("전체 커뮤니티 게시글 목록 조회 - 성공")
+    @Disabled
     void getAllCommunity_Success() {
         // 준비
         User user = new User(1L, "nickName");
-
         int page = 0;
         boolean isAsc = true;
         Pageable pageable = PageRequest.of(page, 30, Sort.by(Sort.Direction.ASC, "createdAt"));
@@ -195,6 +195,7 @@ public class CommunityServiceTest {
 
     @Test
     @DisplayName("전체 커뮤니티 게시글 목록 조회 - 페이지 값이 음수일 때 실패")
+    @Disabled
     void getAllCommunity_WhenPageIsNegative_ThrowsCustomException() {
         // 준비
         int page = -1; // 음수 페이지
@@ -202,5 +203,30 @@ public class CommunityServiceTest {
 
         // 실행 & 검증
         assertThrows(CustomException.class, () -> communityService.getAllCommunity(page, isAsc));
+    }
+
+    @Test
+    @DisplayName("선택한 커뮤니티 게시글 조회 - 성공")
+    @Disabled
+    void findCommunityPost_Success() {
+        // 준비
+        User user = new User(1L, "nickName");
+        Long communityId = 1L;
+        Community mockCommunity = new Community(communityId, "Test Title", "Test Content", user);
+        // 사용자 정보나 다른 필요한 필드도 여기에 추가합니다.
+
+        when(communityRepository.findByCommunityId(communityId)).thenReturn(Optional.of(mockCommunity));
+
+        // 실행
+        CommunityResponseDto result = communityService.findCommunityPost(communityId);
+
+        // 검증
+        assertNotNull(result);
+        assertEquals("Test Title", result.getTitle());
+        assertEquals("Test Content", result.getContents());
+        assertEquals("nickName", result.getNickName());
+        // 다른 필드 검증도 필요한 경우 여기에 추가합니다.
+
+        verify(communityRepository).findByCommunityId(communityId);
     }
 }

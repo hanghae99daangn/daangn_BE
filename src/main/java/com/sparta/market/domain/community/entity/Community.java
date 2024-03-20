@@ -60,4 +60,13 @@ public class Community {
         this.title = title;
         this.content = content;
     }
+
+    /* 테스트 코드용 Builder 코드*/
+    @Builder
+    public Community(Long communityId, String title, String content, User user) {
+        this.communityId = communityId;
+        this.title = title;
+        this.content = content;
+        this.user = user;
+    }
 }

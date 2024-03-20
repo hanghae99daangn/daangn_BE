@@ -45,4 +45,10 @@ public class User {
     public User (Long id) {
         this.id = id;
     }
+
+    @Builder
+    public User(Long id, String nickname) {
+        this.id = id;
+        this.nickname = nickname;
+    }
 }

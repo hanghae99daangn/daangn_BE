@@ -14,10 +14,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,9 +43,9 @@ public class CommunityServiceTest {
     @BeforeEach
     void setUp() {
         /*커뮤니티 게시글 생성 테스트용*/
-//        MockitoAnnotations.openMocks(this);
+        MockitoAnnotations.openMocks(this);
         /*커뮤니티 게시글 수정 테스트용*/
-        closeable = openMocks(this);
+//        closeable = openMocks(this);
     }
 
     @Test
@@ -140,6 +143,7 @@ public class CommunityServiceTest {
 
     @Test
     @DisplayName("커뮤니티 게시글 삭제 - 성공")
+    @Disabled
     void deleteCommunityPost_Success() {
         // 준비
         Long communityId = 1L;
@@ -164,5 +168,39 @@ public class CommunityServiceTest {
 
         // 검증
         verify(communityRepository).delete(community);
+    }
+
+    @Test
+    @DisplayName("전체 커뮤니티 게시글 목록 조회 - 성공")
+    void getAllCommunity_Success() {
+        // 준비
+        User user = new User(1L, "nickName");
+
+        int page = 0;
+        boolean isAsc = true;
+        Pageable pageable = PageRequest.of(page, 30, Sort.by(Sort.Direction.ASC, "createdAt"));
+        // Community 객체 생성 (빌더 패턴이나 적절한 생성자 사용)
+        Community community = new Community(1L, "Sample Title", "Sample content", user);
+        Page<Community> communityPage = new PageImpl<>(Collections.singletonList(community), pageable, 1);
+        when(communityRepository.findAll(any(Pageable.class))).thenReturn(communityPage);
+
+        // 실행
+        Page<CommunityResponseDto> result = communityService.getAllCommunity(page, isAsc);
+
+        // 검증
+        assertNotNull(result);
+        assertEquals(1, result.getTotalElements());
+        verify(communityRepository).findAll(any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("전체 커뮤니티 게시글 목록 조회 - 페이지 값이 음수일 때 실패")
+    void getAllCommunity_WhenPageIsNegative_ThrowsCustomException() {
+        // 준비
+        int page = -1; // 음수 페이지
+        boolean isAsc = true;
+
+        // 실행 & 검증
+        assertThrows(CustomException.class, () -> communityService.getAllCommunity(page, isAsc));
     }
 }

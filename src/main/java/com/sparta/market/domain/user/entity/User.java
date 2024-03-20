@@ -34,4 +34,8 @@ public class User {
     public User (String email) {
         this.email = email;
     }
+    @Builder
+    public User (Long id) {
+        this.id = id;
+    }
 }

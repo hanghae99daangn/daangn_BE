@@ -2,7 +2,6 @@ package com.sparta.market.domain.trade.controller;
 
 import com.sparta.market.domain.trade.dto.TradeRequestDto.CreateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.UpdateTradeRequestDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto;
 import com.sparta.market.domain.trade.dto.TradeResponseDto.*;
 import com.sparta.market.domain.trade.service.TradeService;
 import com.sparta.market.global.common.dto.ResponseDto;

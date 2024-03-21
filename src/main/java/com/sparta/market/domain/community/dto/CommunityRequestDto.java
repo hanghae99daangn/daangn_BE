@@ -10,13 +10,15 @@ public class CommunityRequestDto {
     private String title;
     private String content;
     private CommunityCategory category;
+    private String address;
     private Long imgId;
 
     /*단위 테스트를 위해 추가*/
     @Builder
-    public CommunityRequestDto(String title, String content, CommunityCategory category) {
+    public CommunityRequestDto(String title, String content, CommunityCategory category, String address) {
         this.title = title;
         this.content = content;
         this.category = category;
+        this.address = address;
     }
 }

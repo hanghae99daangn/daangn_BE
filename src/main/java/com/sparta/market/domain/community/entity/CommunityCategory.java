@@ -4,9 +4,9 @@ import lombok.Getter;
 
 @Getter
 public enum CommunityCategory {
-    SAMPLE("SAMPLE"),
-    SAMPLE2("SAMPLE2"),
-    SAMPLE3("SAMPLE3")
+    동네질문("동네질문"),
+    생활정보("생활정보"),
+    동네맛집("동네맛집")
     ;
 
     private final String category;

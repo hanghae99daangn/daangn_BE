@@ -17,6 +17,7 @@ public class CommunityResponseDto {
     private String contents;
     private CommunityCategory category;
     private LocalDateTime createdAt;
+    private String address;
     private List<String> imageNameList;
     private List<String> imageUrlList;
 
@@ -28,6 +29,7 @@ public class CommunityResponseDto {
         this.contents = community.getContent();
         this.category = community.getCategory();
         this.createdAt = community.getCreatedAt();
+        this.address = community.getAddress();
     }
 
     @Builder
@@ -38,6 +40,7 @@ public class CommunityResponseDto {
         this.contents = community.getContent();
         this.category = community.getCategory();
         this.createdAt = community.getCreatedAt();
+        this.address = community.getAddress();
         this.imageNameList = nameList;
         this.imageUrlList = urlList;
     }

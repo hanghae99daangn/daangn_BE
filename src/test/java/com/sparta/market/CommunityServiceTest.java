@@ -2,6 +2,8 @@ package com.sparta.market;
 
 import com.sparta.market.domain.community.dto.CommunityRequestDto;
 import com.sparta.market.domain.community.dto.CommunityResponseDto;
+import com.sparta.market.domain.community.dto.GetAllCommunityResponseDto;
+import com.sparta.market.domain.community.dto.GetCommunityResponseDto;
 import com.sparta.market.domain.community.entity.Community;
 import com.sparta.market.domain.community.entity.CommunityCategory;
 import com.sparta.market.domain.community.repository.CommunityRepository;
@@ -21,6 +23,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -52,10 +55,10 @@ public class CommunityServiceTest {
     @Test
     @DisplayName("커뮤니티 게시글 생성 테스트 - 성공")
     @Disabled
-    void createCommunityPost_Success() {
+    void createCommunityPost_Success() throws IOException {
         // 준비
         String email = "user@example.com";
-        CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content", CommunityCategory.SAMPLE);
+        CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content", CommunityCategory.동네질문, "Test Address");
         User user = new User(); // 유저 객체 설정 필요
         Authentication authentication = mock(Authentication.class);
         SecurityContext securityContext = mock(SecurityContext.class);
@@ -68,7 +71,7 @@ public class CommunityServiceTest {
         when(communityRepository.save(any(Community.class))).thenAnswer(i -> i.getArguments()[0]);
 
         // 실행
-        CommunityResponseDto result = communityService.createCommunityPost(requestDto);
+        CommunityResponseDto result = communityService.createCommunityPost(requestDto, null);
 
         // 검증
         assertNotNull(result);
@@ -84,7 +87,7 @@ public class CommunityServiceTest {
     @Disabled
     void createCommunityPost_Failure_UserNotFound() {
         // 준비
-        CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content", CommunityCategory.SAMPLE);
+        CommunityRequestDto requestDto = new CommunityRequestDto("Test Title", "Test Content", CommunityCategory.동네질문, "Test Address");
         String nonexistentEmail = "nonexistent@example.com";
 
         Authentication authentication = mock(Authentication.class);
@@ -97,7 +100,7 @@ public class CommunityServiceTest {
         when(userRepository.findByEmail(nonexistentEmail)).thenReturn(Optional.empty());
 
         // 실행 & 검증
-        assertThrows(CustomException.class, () -> communityService.createCommunityPost(requestDto));
+        assertThrows(CustomException.class, () -> communityService.createCommunityPost(requestDto, null));
 
         verify(userRepository, times(1)).findByEmail(nonexistentEmail);
         verify(communityRepository, never()).save(any(Community.class));
@@ -106,12 +109,12 @@ public class CommunityServiceTest {
     @Test
     @DisplayName("커뮤니티 게시글 수정 - 성공")
     @Disabled
-    void updateCommunityPost_Success() {
+    void updateCommunityPost_Success() throws IOException {
         // 준비
         Long communityId = 1L;
-        CommunityRequestDto requestDto = new CommunityRequestDto("Updated Title", "Updated Content", CommunityCategory.SAMPLE);
+        CommunityRequestDto requestDto = new CommunityRequestDto("Updated Title", "Updated Content", CommunityCategory.동네질문, "Test Address");
         User user = new User(1L); // 적절한 User 객체 설정 필요
-        Community community = new Community("Title", "Content", user, CommunityCategory.SAMPLE); // 적절한 Community 객체 설정 필요
+        Community community = new Community("Title", "Content", user, CommunityCategory.동네질문, "Test Address"); // 적절한 Community 객체 설정 필요
 
         Authentication authentication = mock(Authentication.class);
         SecurityContext securityContext = mock(SecurityContext.class);
@@ -129,7 +132,7 @@ public class CommunityServiceTest {
         }).when(communityRepository).save(any(Community.class));
 
         // 실행
-        CommunityResponseDto result = communityService.updateCommunityPost(communityId, requestDto);
+        CommunityResponseDto result = communityService.updateCommunityPost(communityId, requestDto, null);
 
         // 검증
         assertNotNull(result);
@@ -181,12 +184,12 @@ public class CommunityServiceTest {
         boolean isAsc = true;
         Pageable pageable = PageRequest.of(page, 30, Sort.by(Sort.Direction.ASC, "createdAt"));
         // Community 객체 생성 (빌더 패턴이나 적절한 생성자 사용)
-        Community community = new Community(1L, "Sample Title", "Sample content", user);
+        Community community = new Community(1L, "Sample Title", "Sample content", user, CommunityCategory.동네질문, "Test Address");
         Page<Community> communityPage = new PageImpl<>(Collections.singletonList(community), pageable, 1);
         when(communityRepository.findAll(any(Pageable.class))).thenReturn(communityPage);
 
         // 실행
-        Page<CommunityResponseDto> result = communityService.getAllCommunity(page, isAsc);
+        Page<GetAllCommunityResponseDto> result = communityService.getAllCommunity(page, isAsc);
 
         // 검증
         assertNotNull(result);
@@ -213,19 +216,19 @@ public class CommunityServiceTest {
         // 준비
         User user = new User(1L, "nickName");
         Long communityId = 1L;
-        Community mockCommunity = new Community(communityId, "Test Title", "Test Content", user);
+        Community mockCommunity = new Community(communityId, "Test Title", "Test Content", user, CommunityCategory.동네질문, "test address");
         // 사용자 정보나 다른 필요한 필드도 여기에 추가합니다.
 
         when(communityRepository.findByCommunityId(communityId)).thenReturn(Optional.of(mockCommunity));
 
         // 실행
-        CommunityResponseDto result = communityService.findCommunityPost(communityId);
+        GetCommunityResponseDto result = communityService.findCommunityPost(communityId);
 
         // 검증
         assertNotNull(result);
         assertEquals("Test Title", result.getTitle());
         assertEquals("Test Content", result.getContents());
-        assertEquals("nickName", result.getNickName());
+        assertEquals("nickName", result.getNickname());
         // 다른 필드 검증도 필요한 경우 여기에 추가합니다.
 
         verify(communityRepository).findByCommunityId(communityId);

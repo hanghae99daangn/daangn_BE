@@ -53,12 +53,17 @@ public class Community {
     @Schema(name = "community post category", description = "커뮤니티 게시글 카테고리")
     private CommunityCategory category;
 
+    @Column
+    @Schema(name = "community post user address", description = "커뮤니티 게시글 생성 유저 주소 정보")
+    private String address;
+
     @Builder
-    public Community(String title, String content, User user, CommunityCategory category) {
+    public Community(String title, String content, User user, CommunityCategory category, String address) {
         this.title = title;
         this.content = content;
         this.user = user;
         this.category = category;
+        this.address = address;
     }
 
     public void updatePost(String title, String content, CommunityCategory category) {
@@ -69,10 +74,12 @@ public class Community {
 
     /* 테스트 코드용 Builder 코드*/
     @Builder
-    public Community(Long communityId, String title, String content, User user) {
+    public Community(Long communityId, String title, String content, User user, CommunityCategory category, String address) {
         this.communityId = communityId;
         this.title = title;
         this.content = content;
         this.user = user;
+        this.category = category;
+        this.address = address;
     }
 }

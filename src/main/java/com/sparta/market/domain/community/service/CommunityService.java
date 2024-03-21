@@ -42,7 +42,8 @@ public class CommunityService {
     private final S3UploadService s3UploadService;
     private final CommunityImageRepository communityImageRepository;
 
-    public CommunityService(CommunityRepository communityRepository, UserRepository userRepository, S3UploadService s3UploadService, CommunityImageRepository communityImageRepository) {
+    public CommunityService(CommunityRepository communityRepository, UserRepository userRepository,
+                            S3UploadService s3UploadService, CommunityImageRepository communityImageRepository) {
         this.communityRepository = communityRepository;
         this.userRepository = userRepository;
         this.s3UploadService = s3UploadService;
@@ -62,6 +63,7 @@ public class CommunityService {
                 .content(requestDto.getContent())
                 .user(user)
                 .category(requestDto.getCategory())
+                .address(requestDto.getAddress())
                 .build();
 
         /*DB에 Community Post 정보 저장*/

@@ -26,7 +26,6 @@ public class User {
     @Column (nullable = false)
     private String nickname;
 
-    // 010 3070 7427
     @Column (nullable = false, unique = true)
     private String phoneNumber;
 
@@ -37,7 +36,19 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
-//    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private UserProfile userProfile;
+    /*커뮤니티 게시글 테스트용 Builder 코드*/
+    @Builder
+    public User (String email) {
+        this.email = email;
+    }
+    @Builder
+    public User (Long id) {
+        this.id = id;
+    }
 
+    @Builder
+    public User(Long id, String nickname) {
+        this.id = id;
+        this.nickname = nickname;
+    }
 }

@@ -18,7 +18,8 @@ public enum ErrorCode {
     NOT_YOUR_IMG("NOT_YOUR_IMG", "imgId를 확인해주세요", HttpStatus.BAD_REQUEST),
     NOT_EXIST_IMG("NOT_EXIST_IMG", "해당 사진이 존재하지 않습니다.", HttpStatus.BAD_REQUEST),
     FAIL_TO_SEND_MAIL("FAIL_TO_SEND_MAIL", "메일을 보내는데 실패했습니다.", HttpStatus.INTERNAL_SERVER_ERROR),
-    DUPLICATED_PHONE_NUMBER("DUPLICATED_PHONE_NUMBER", "중복된 전화번호입니다.", HttpStatus.BAD_REQUEST);
+    DUPLICATED_PHONE_NUMBER("DUPLICATED_PHONE_NUMBER", "중복된 전화번호입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_CATEGORY_INPUT("INVALID_CATEGORY_INPUT", "잘못된 카테고리 입력입니다.", HttpStatus.BAD_REQUEST);
 
 
     private final String key;

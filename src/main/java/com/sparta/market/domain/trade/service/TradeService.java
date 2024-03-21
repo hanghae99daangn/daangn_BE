@@ -1,13 +1,8 @@
 package com.sparta.market.domain.trade.service;
 
-import com.sparta.market.domain.trade.dto.TradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.CreateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.UpdateTradeRequestDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.CreateTradeResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.GetPostListResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.GetPostResponseDto;
-import com.sparta.market.domain.trade.dto.TradeResponseDto.UpdateTradeResponseDto;
+import com.sparta.market.domain.trade.dto.TradeResponseDto.*;
 import com.sparta.market.domain.trade.entity.TradePost;
 import com.sparta.market.domain.trade.entity.TradePostImage;
 import com.sparta.market.domain.trade.repository.TradePostImageRepository;
@@ -25,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j(topic = "tradeService")
 @Service
@@ -60,7 +54,7 @@ public class TradeService {
         List<String> updateImageUrlList = new ArrayList<>();
         List<String> updateImageNameList = new ArrayList<>();
 
-        // 원래 이미지가 없던 글 + 파일도 업로드 안한 경우
+        /* 원래 이미지가 없던 글 + 파일도 업로드 안한 경우 */
         if (requestDto.getImgId() == null && multipartFileList == null) {
             TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(
                     () -> new CustomException(ErrorCode.NOT_EXIST_POST)
@@ -68,7 +62,7 @@ public class TradeService {
             post.update(requestDto);
             return new UpdateTradeResponseDto(post);
         }
-        // 이미지가 없다가, 등록하는 경우
+        /* 이미지가 없다가, 등록하는 경우 */
         if (requestDto.getImgId() == null) {
             TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(
                     () -> new CustomException(ErrorCode.NOT_EXIST_POST)
@@ -77,7 +71,7 @@ public class TradeService {
             saveImgToS3(multipartFileList, post, updateImageUrlList, updateImageNameList);
             return new UpdateTradeResponseDto(post, updateImageUrlList, updateImageNameList);
         }
-        // 이미지가 있었고, 내용만 수정하는 경우
+        /* 이미지가 있었고, 내용만 수정하는 경우 */
         if (multipartFileList == null) {
             TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(() ->
                     new CustomException(ErrorCode.NOT_EXIST_POST)
@@ -85,7 +79,7 @@ public class TradeService {
             post.update(requestDto);
             return new UpdateTradeResponseDto(post);
         }
-        // 이미지를 바꾸는 경우
+        /* 이미지를 바꾸는 경우 */
         TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(() ->
                 new CustomException(ErrorCode.NOT_EXIST_POST)
         );
@@ -93,7 +87,7 @@ public class TradeService {
             throw new CustomException(ErrorCode.NOT_YOUR_IMG);
         }
 
-        // 이미지 삭제
+        /* 이미지 삭제 */
         TradePostImage deletePostImage = tradePostImageRepository.findById(requestDto.getImgId()).orElseThrow(
                 () -> new CustomException(ErrorCode.NOT_EXIST_IMG)
         );
@@ -111,10 +105,10 @@ public class TradeService {
                 new CustomException(ErrorCode.NOT_YOUR_POST)
         );
 
-        // 게시글 삭제시, S3 서버에 저장된 이미지도 같이 삭제
+        /* 게시글 삭제시, S3 서버에 저장된 이미지도 같이 삭제 */
         List<TradePostImage> postImageList = tradePostImageRepository.findAllByTradePostId(tradeId);
         for (TradePostImage postImage : postImageList) {
-            // S3name -> UUID 포함된 파일명
+            /* S3name -> UUID 포함된 파일명 */
             s3UploadService.deleteFile(postImage.getS3name());
         }
         tradePostRepository.delete(post);
@@ -150,5 +144,11 @@ public class TradeService {
         );
         post.updateHit();
         return new GetPostResponseDto(post);
+    }
+
+    @Transactional(readOnly = true)
+    public List<GetCategoryPostListResponseDto> getCategoryPostList(String category) {
+        List<TradePost> categoryPostList = tradePostRepository.findAllByCategory(category);
+        return categoryPostList.stream().map(GetCategoryPostListResponseDto::new).toList();
     }
 }

@@ -26,6 +26,7 @@ public class User {
     @Column (nullable = false)
     private String nickname;
 
+    // 010 3070 7427
     @Column (nullable = false, unique = true)
     private String phoneNumber;
 

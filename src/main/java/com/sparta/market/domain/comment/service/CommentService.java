@@ -11,6 +11,10 @@ import com.sparta.market.domain.user.repository.UserRepository;
 import com.sparta.market.global.common.exception.CustomException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -65,6 +69,7 @@ public class CommentService {
     }
 
     /* 커뮤니티 게시글 댓글 삭제*/
+    @Transactional
     public void deleteComment(Long communityId, Long commentId) {
         /* 유저 정보 검증*/
         User user = getAuthenticatedUser();
@@ -73,6 +78,22 @@ public class CommentService {
         Comment comment = validateCommentOwnership(communityId, commentId, user);
 
         commentRepository.delete(comment);
+    }
+
+    /* 커뮤니티 게시글 댓글 목록 조회*/
+    @Transactional(readOnly = true)
+    public Page<CommentResponseDto> getComments(Long communityId, int page, boolean isAsc) {
+        /* 조회 시에는 유저 정보 검증 x */
+        /* 커뮤니티 게시글 검증*/
+        Community community = validateCommunity(communityId);
+
+        /* pageable 객체 생성*/
+        Pageable pageable = validateAndCreatePageable(page, isAsc);
+
+        /* 페이징 처리*/
+        Page<Comment> commentPage = commentRepository.findByCommunity(community, pageable);
+
+        return commentPage.map(CommentResponseDto::new);
     }
 
 
@@ -106,5 +127,14 @@ public class CommentService {
         }
 
         return comment;
+    }
+
+    /* 입력 값 검증과 페이지 설정 메서드*/
+    private Pageable validateAndCreatePageable(int page, boolean isAsc) {
+        if (page < 0) {
+            throw new CustomException(VALIDATION_ERROR);
+        }
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        return PageRequest.of(page, 10, Sort.by(direction, "createdAt"));
     }
 }

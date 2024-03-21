@@ -42,11 +42,22 @@ public class CommentController {
     }
 
     @DeleteMapping("/{communityId}/comment/{commentId}")
-    @Operation(summary = "Delete Comment" , description = "커뮤니티 게시글의 댓글을 삭제합니다.")
+    @Operation(summary = "Delete Comment", description = "커뮤니티 게시글의 댓글을 삭제합니다.")
     public ResponseEntity<?> deleteComment(@PathVariable Long communityId, @PathVariable Long commentId) {
 
         commentService.deleteComment(communityId, commentId);
 
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 삭제 완료", "엘든링"));
+    }
+
+    @GetMapping("/{communityId}/comments")
+    @Operation(summary = "Get Comments", description = "커뮤티니 게시글의 댓글 목록을 조회합니다.")
+    public ResponseEntity<?> getComments(@PathVariable Long communityId,
+                                         @RequestParam("isAsc") boolean isAsc,
+                                         @RequestParam(value = "page", defaultValue = "1") int page) {
+
+        return ResponseEntity.ok().body(
+          ResponseDto.success("커뮤니티 게시글의 댓글 목록 조회 성공",
+                  commentService.getComments(communityId, page -1, isAsc)));
     }
 }

@@ -1,5 +1,6 @@
 package com.sparta.market.domain.community.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.sparta.market.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,23 +40,47 @@ public class Community {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL)
     @Schema(name = "community post image id", description = "커뮤니티 게시글 이미지 ID 리스트")
     private List<CommunityImage> communityImages;
 
     @CreatedDate
     @Schema(name = "community post created time", description = "커뮤니티 게시글 작성 시간")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Schema(name = "community post category", description = "커뮤니티 게시글 카테고리")
+    private CommunityCategory category;
+
+    @Column
+    @Schema(name = "community post user address", description = "커뮤니티 게시글 생성 유저 주소 정보")
+    private String address;
+
     @Builder
-    public Community(String title, String content, User user) {
+    public Community(String title, String content, User user, CommunityCategory category, String address) {
         this.title = title;
         this.content = content;
         this.user = user;
+        this.category = category;
+        this.address = address;
     }
 
-    public void updatePost(String title, String content) {
+    public void updatePost(String title, String content, CommunityCategory category, String address) {
         this.title = title;
         this.content = content;
+        this.category = category;
+        this.address = address;
+    }
+
+    /* 테스트 코드용 Builder 코드*/
+    @Builder
+    public Community(Long communityId, String title, String content, User user, CommunityCategory category, String address) {
+        this.communityId = communityId;
+        this.title = title;
+        this.content = content;
+        this.user = user;
+        this.category = category;
+        this.address = address;
     }
 }

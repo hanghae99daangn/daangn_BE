@@ -140,12 +140,13 @@ public class TradeService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetPostListResponseDto> getAllPostList(int page) {
+    public Page<GetPostListResponseDto> getAllPostList(int page) {
         int pageNum = Math.max(page - 1, 0);
         Pageable pageable = PageRequest.of(pageNum, 30);
         Page<TradePost> postList = tradePostRepository.findAll(pageable);
+        return postList.map(GetPostListResponseDto::new);
 
-        return postList.stream().map(GetPostListResponseDto::new).toList();
+//        return postList.stream().map(GetPostListResponseDto::new).toList();
     }
 
     @Transactional
@@ -158,11 +159,11 @@ public class TradeService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetCategoryPostListResponseDto> getCategoryPostList(String category, int page) {
+    public Page<GetCategoryPostListResponseDto> getCategoryPostList(String category, int page) {
         int pageNum = Math.max(page - 1, 0);
         Pageable pageable = PageRequest.of(pageNum, 30);
         Page<TradePost> categoryPostList = tradePostRepository.findAllByCategory(category, pageable);
-        return categoryPostList.stream().map(GetCategoryPostListResponseDto::new).toList();
+        return categoryPostList.map(GetCategoryPostListResponseDto::new);
     }
 
     @Transactional

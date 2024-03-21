@@ -31,7 +31,7 @@ public class TradePost extends Timestamped {
     @Column (columnDefinition = "integer default 0", nullable = false)
     private int price;
 
-    @Column (nullable = false)
+    @Column (nullable = false, length = 2000)
     private String content;
 
     private String contactPlace;

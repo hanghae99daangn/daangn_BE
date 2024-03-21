@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -61,7 +62,7 @@ public class TradeController {
             description = "조회시, 글에 저장된 첫 번째 이미지 출력를 출력합니다!")
     @GetMapping("/trades")
     public ResponseEntity<?> getAllPostList(@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
-        List<GetPostListResponseDto> postList = tradeService.getAllPostList(page);
+        Page<GetPostListResponseDto> postList = tradeService.getAllPostList(page);
         return ResponseEntity.ok().body(ResponseDto.success("전체 판매글 조회 성공", postList));
     }
 
@@ -77,7 +78,7 @@ public class TradeController {
             description = "조회시, 글에 저장된 첫 번째 이미지 출력를 출력합니다!")
     @GetMapping("/trades/category")
     public ResponseEntity<?> getCategoryPostList(@RequestParam String category, @RequestParam(value = "page", required = false, defaultValue = "1") int page){
-        List<GetCategoryPostListResponseDto> categoryList = tradeService.getCategoryPostList(category, page);
+        Page<GetCategoryPostListResponseDto> categoryList = tradeService.getCategoryPostList(category, page);
         return ResponseEntity.ok().body(ResponseDto.success("카테고리별 판매글 조회 성공", categoryList));
     }
 

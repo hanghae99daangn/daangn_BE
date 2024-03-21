@@ -74,7 +74,7 @@ public class CommunityController {
     @Operation(summary = "전체 커뮤니티 게시글 조회", description = "전체 커뮤니티 게시글 목록을 조회합니다, 카테고리별 필터링 기능도 사용할 수 있습니다.")
     @GetMapping("/community")
     public ResponseEntity<?> getAllCommunity(@RequestParam("isAsc") boolean isAsc,
-                                             @RequestParam("page") int page,
+                                             @RequestParam(value = "page", defaultValue = "1") int page,
                                              @RequestParam(value = "category", required = false) String categoryName) {
 
         /* 카테고리 필터링을 했을 때*/

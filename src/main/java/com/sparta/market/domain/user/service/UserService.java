@@ -34,23 +34,26 @@ public class UserService {
         if (userRepository.findByPhoneNumber(requestDto.getPhoneNumber()).isPresent()) {
             throw new CustomException(ErrorCode.DUPLICATED_PHONE_NUMBER);
         }
-        String password = passwordEncoder.encode(requestDto.getPassword());
 
-        String filename = multipartFile.getOriginalFilename();
-        String imageUrl = s3UploadService.saveFile(multipartFile, multipartFile.getOriginalFilename());
+        String password = passwordEncoder.encode(requestDto.getPassword());
 
         User user = requestDto.toEntity(password, UserRoleEnum.USER);
         User savedUser = userRepository.save(user);
-        UserProfile userProfile = UserProfile.builder()
-                .url(imageUrl)
-                .imageName(multipartFile.getOriginalFilename())
-                .s3name(filename)
-                .user(user)
-                .build();
-        UserProfile savedUserProfile = userProfileRepository.save(userProfile);
 
+        if (multipartFile != null) {
+            String filename = multipartFile.getOriginalFilename();
+            String imageUrl = s3UploadService.saveFile(multipartFile, multipartFile.getOriginalFilename());
+            UserProfile userProfile = UserProfile.builder()
+                    .url(imageUrl)
+                    .imageName(multipartFile.getOriginalFilename())
+                    .s3name(filename)
+                    .user(user)
+                    .build();
+            UserProfile savedUserProfile = userProfileRepository.save(userProfile);
+            return new SignupResponseDto(savedUser, savedUserProfile);
+        }
 
-        return new SignupResponseDto(savedUser, savedUserProfile);
+        return new SignupResponseDto(savedUser);
     }
 
 }

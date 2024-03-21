@@ -3,8 +3,11 @@ package com.sparta.market.domain.trade.service;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.CreateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.UpdateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeResponseDto.*;
+import com.sparta.market.domain.trade.entity.LikeStateEnum;
+import com.sparta.market.domain.trade.entity.TradeLike;
 import com.sparta.market.domain.trade.entity.TradePost;
 import com.sparta.market.domain.trade.entity.TradePostImage;
+import com.sparta.market.domain.trade.repository.TradeLikeRepository;
 import com.sparta.market.domain.trade.repository.TradePostImageRepository;
 import com.sparta.market.domain.trade.repository.TradePostRepository;
 import com.sparta.market.domain.user.entity.User;
@@ -13,6 +16,9 @@ import com.sparta.market.global.common.exception.CustomException;
 import com.sparta.market.global.common.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j(topic = "tradeService")
 @Service
@@ -28,6 +35,7 @@ public class TradeService {
     private final TradePostRepository tradePostRepository;
     private final S3UploadService s3UploadService;
     private final TradePostImageRepository tradePostImageRepository;
+    private final TradeLikeRepository tradeLikeRepository;
 
 
     @Transactional
@@ -116,7 +124,7 @@ public class TradeService {
 
     private void saveImgToS3(MultipartFile[] multipartFileList, TradePost tradePost, List<String> updateImageUrlList, List<String> updateImageNameList) throws IOException {
         for (MultipartFile multipartFile : multipartFileList) {
-            //
+
             String filename = multipartFile.getOriginalFilename();
             String imageUrl = s3UploadService.saveFile(multipartFile, multipartFile.getOriginalFilename());
             TradePostImage postImage = TradePostImage.builder()
@@ -132,9 +140,13 @@ public class TradeService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetPostListResponseDto> getAllPostList() {
-        List<TradePost> postList = tradePostRepository.findAll();
-        return postList.stream().map(GetPostListResponseDto::new).toList();
+    public Page<GetPostListResponseDto> getAllPostList(int page) {
+        int pageNum = Math.max(page - 1, 0);
+        Pageable pageable = PageRequest.of(pageNum, 30);
+        Page<TradePost> postList = tradePostRepository.findAll(pageable);
+        return postList.map(GetPostListResponseDto::new);
+
+//        return postList.stream().map(GetPostListResponseDto::new).toList();
     }
 
     @Transactional
@@ -147,8 +159,35 @@ public class TradeService {
     }
 
     @Transactional(readOnly = true)
-    public List<GetCategoryPostListResponseDto> getCategoryPostList(String category) {
-        List<TradePost> categoryPostList = tradePostRepository.findAllByCategory(category);
-        return categoryPostList.stream().map(GetCategoryPostListResponseDto::new).toList();
+    public Page<GetCategoryPostListResponseDto> getCategoryPostList(String category, int page) {
+        int pageNum = Math.max(page - 1, 0);
+        Pageable pageable = PageRequest.of(pageNum, 30);
+        Page<TradePost> categoryPostList = tradePostRepository.findAllByCategory(category, pageable);
+        return categoryPostList.map(GetCategoryPostListResponseDto::new);
+    }
+
+    @Transactional
+    public boolean updateLike(Long tradeId, User user) {
+        boolean likeCheck = tradeLikeRepository.existsByUserAndTradePostId(user, tradeId);
+        TradePost post = tradePostRepository.findById(tradeId).orElseThrow(() ->
+                new CustomException(ErrorCode.NOT_EXIST_POST)
+        );
+        /* 좋아요 로직 (이미 누른 경우와 누르지 않았던 경우) */
+        if (likeCheck) {
+            Optional<TradeLike> like = tradeLikeRepository.findByUserAndTradePostId(user, tradeId);
+            TradeLike getLike = like.orElseThrow(()->
+                    new CustomException(ErrorCode.VALIDATION_ERROR)
+            );
+            getLike.update();
+            return getLike.getLikeState().getState().equals("활성화");
+        } else {
+            TradeLike like = TradeLike.builder()
+                    .likeState(LikeStateEnum.ENABLED)
+                    .user(user)
+                    .tradePost(post)
+                    .build();
+            tradeLikeRepository.save(like);
+            return true;
+        }
     }
 }

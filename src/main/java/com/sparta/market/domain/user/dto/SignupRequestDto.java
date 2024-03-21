@@ -20,13 +20,13 @@ public class SignupRequestDto {
     @Schema(description = "이메일", example = "test123@test.com")
     private String email;
 
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,15}$",
-            message = "비밀번호는 최소 8자에서 최대 15자까지, 소문자, 대문자, 숫자, 특수 문자(@, $, !, %, *, ?, &)를 포함해야 합니다.")
+//    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,15}$",
+//            message = "비밀번호는 최소 8자에서 최대 15자까지, 소문자, 대문자, 숫자, 특수 문자(@, $, !, %, *, ?, &)를 포함해야 합니다.")
     @Schema(description = "비밀번호", example = "!234Qwer")
     private String password;
 
     @NotBlank(message = "올바른 전화번호를 입력해주세요!")
-    @Schema(description = "전화번호", example = "010-1234-5678")
+    @Schema(description = "전화번호", example = "010 1234 5678")
     private String phoneNumber;
 
     @NotBlank(message = "올바른 닉네임을 입력해주세요!")
@@ -41,7 +41,7 @@ public class SignupRequestDto {
         return User.builder()
                 .email(this.email)
                 .password(password)
-                .phoneNumber(this.phoneNumber)
+                .phoneNumber(this.phoneNumber.replace(" ", ""))
                 .nickname(this.nickname)
                 .address(this.address)
                 .role(role)

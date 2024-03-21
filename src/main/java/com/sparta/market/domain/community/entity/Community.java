@@ -31,7 +31,7 @@ public class Community {
     @Schema(name = "community post title", description = "커뮤니티 게시글 제목", example = "오늘 저녁 뭐 먹지?")
     private String title;
 
-    @Column
+    @Column(length = 2000)
     @Schema(name = "community post contents", description = "커뮤니티 게시글 내용", example = "저녁 메뉴 추천해주세요!")
     private String content;
 

@@ -64,6 +64,17 @@ public class CommentService {
         return new CommentResponseDto(comment);
     }
 
+    /* 커뮤니티 게시글 댓글 삭제*/
+    public void deleteComment(Long communityId, Long commentId) {
+        /* 유저 정보 검증*/
+        User user = getAuthenticatedUser();
+
+        /* 커뮤니티 게시글, 댓글 및 댓글에 대한 유저 권한 검증*/
+        Comment comment = validateCommentOwnership(communityId, commentId, user);
+
+        commentRepository.delete(comment);
+    }
+
 
     /* 검증 메서드 필드*/
     /*유저 정보 검증 메서드*/

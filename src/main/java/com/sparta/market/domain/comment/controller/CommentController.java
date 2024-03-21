@@ -40,4 +40,13 @@ public class CommentController {
 
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 수정 완료", responseDto));
     }
+
+    @DeleteMapping("/{communityId}/comment/{commentId}")
+    @Operation(summary = "Delete Comment" , description = "커뮤니티 게시글의 댓글을 삭제합니다.")
+    public ResponseEntity<?> deleteComment(@PathVariable Long communityId, @PathVariable Long commentId) {
+
+        commentService.deleteComment(communityId, commentId);
+
+        return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 삭제 완료", "엘든링"));
+    }
 }

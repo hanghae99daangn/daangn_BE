@@ -11,7 +11,6 @@ public class CommunityRequestDto {
     private String content;
     private CommunityCategory category;
     private String address;
-    private Long imgId;
 
     /*단위 테스트를 위해 추가*/
     @Builder

@@ -14,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import static com.sparta.market.global.common.exception.ErrorCode.NOT_EXIST_POST;
-import static com.sparta.market.global.common.exception.ErrorCode.NOT_EXIST_USER;
+import static com.sparta.market.global.common.exception.ErrorCode.*;
 
 @Tag(name = "커뮤니티 게시글 댓글 기능", description = "커뮤니티 게시글에 댓글 작성(추가), 수정, 조회, 삭제 기능")
 @Slf4j(topic = "댓글 생성, 수정, 삭제")
@@ -34,6 +34,7 @@ public class CommentService {
     }
 
     /* 커뮤니티 게시글 댓글 추가*/
+    @Transactional
     public CommentResponseDto createComment(Long communityId, CommentRequestDto requestDto) {
         /* 유저 정보 검증*/
         User user = getAuthenticatedUser();
@@ -45,6 +46,20 @@ public class CommentService {
         Comment comment = new Comment(requestDto.getCommentContent(), community, user);
 
         commentRepository.save(comment);
+
+        return new CommentResponseDto(comment);
+    }
+
+    /* 커뮤니티 게시글 댓글 수정*/
+    @Transactional
+    public CommentResponseDto updateComment(Long communityId, Long commentId, CommentRequestDto requestDto) {
+        /* 유저 정보 검증*/
+        User user = getAuthenticatedUser();
+
+        /* 커뮤니티 게시글, 댓글 및 댓글에 대한 유저 권한 검증*/
+        Comment comment = validateCommentOwnership(communityId, commentId, user);
+
+        comment.updateComment(requestDto.getCommentContent());
 
         return new CommentResponseDto(comment);
     }
@@ -63,5 +78,22 @@ public class CommentService {
     private Community validateCommunity(Long communityId) {
         return communityRepository.findByCommunityId(communityId)
                 .orElseThrow(() -> new CustomException(NOT_EXIST_POST));
+    }
+
+    /* 댓글 및 댓글에 대한 유저 권한 검증 메서드*/
+    private Comment validateCommentOwnership(Long communityId, Long commentId, User user) {
+        /* 게시글 검증*/
+        Community community = validateCommunity(communityId);
+
+        /* 댓글 검증*/
+        Comment comment = commentRepository.findByCommunityAndCommentId(community, commentId)
+                .orElseThrow(() -> new CustomException(NOT_EXIST_COMMENT));
+
+        /* 댓글에 대한 유저 권한 검증*/
+        if (!comment.getUser().getId().equals(user.getId())) {
+            throw new CustomException(NOT_YOUR_COMMENT);
+        }
+
+        return comment;
     }
 }

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class CommentController {
 
     private final CommentService commentService;
+
     public CommentController(CommentService commentService) {
         this.commentService = commentService;
     }
@@ -28,5 +29,15 @@ public class CommentController {
         CommentResponseDto responseDto = commentService.createComment(communityId, requestDto);
 
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 작성 완료", responseDto));
+    }
+
+    @PutMapping("/{communityId}/comment/{commentId}")
+    @Operation(summary = "Update Comment", description = "커뮤니티 게시글의 댓글을 수정합니다.")
+    public ResponseEntity<?> updateComment(@PathVariable Long communityId, @PathVariable Long commentId,
+                                           @RequestBody CommentRequestDto requestDto) {
+
+        CommentResponseDto responseDto = commentService.updateComment(communityId, commentId, requestDto);
+
+        return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 수정 완료", responseDto));
     }
 }

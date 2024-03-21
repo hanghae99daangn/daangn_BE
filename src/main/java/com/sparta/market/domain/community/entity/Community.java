@@ -66,10 +66,11 @@ public class Community {
         this.address = address;
     }
 
-    public void updatePost(String title, String content, CommunityCategory category) {
+    public void updatePost(String title, String content, CommunityCategory category, String address) {
         this.title = title;
         this.content = content;
         this.category = category;
+        this.address = address;
     }
 
     /* 테스트 코드용 Builder 코드*/

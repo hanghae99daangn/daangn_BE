@@ -3,6 +3,7 @@ package com.sparta.market.domain.community.controller;
 import com.sparta.market.domain.community.dto.CommunityRequestDto;
 import com.sparta.market.domain.community.dto.CommunityResponseDto;
 import com.sparta.market.domain.community.dto.GetCommunityResponseDto;
+import com.sparta.market.domain.community.dto.UpdateCommunityRequestDto;
 import com.sparta.market.domain.community.entity.CommunityCategory;
 import com.sparta.market.domain.community.service.CommunityService;
 import com.sparta.market.global.common.dto.ResponseDto;
@@ -45,7 +46,7 @@ public class CommunityController {
     /*@RequestPart 사용 업로드 이미지 수정 리팩토링 예정*/
     public ResponseEntity<?> updateCommunityPost(@PathVariable Long communityId,
                                                  @RequestPart(value = "files", required = false) MultipartFile[] multipartFilesList,
-                                                 @RequestPart(value = "CommunityRequestDto") CommunityRequestDto requestDto) throws IOException, java.io.IOException {
+                                                 @RequestPart(value = "UpdateCommunityRequestDto") UpdateCommunityRequestDto requestDto) throws IOException, java.io.IOException {
 
         CommunityResponseDto responseDto = communityService.updateCommunityPost(communityId, requestDto, multipartFilesList);
 

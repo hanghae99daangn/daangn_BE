@@ -1,9 +1,6 @@
 package com.sparta.market.domain.community.service;
 
-import com.sparta.market.domain.community.dto.CommunityRequestDto;
-import com.sparta.market.domain.community.dto.CommunityResponseDto;
-import com.sparta.market.domain.community.dto.GetAllCommunityResponseDto;
-import com.sparta.market.domain.community.dto.GetCommunityResponseDto;
+import com.sparta.market.domain.community.dto.*;
 import com.sparta.market.domain.community.entity.Community;
 import com.sparta.market.domain.community.entity.CommunityCategory;
 import com.sparta.market.domain.community.entity.CommunityImage;
@@ -88,7 +85,7 @@ public class CommunityService {
 
     /* 커뮤니티 게시글 수정 로직*/
     @Transactional
-    public CommunityResponseDto updateCommunityPost(Long communityId, CommunityRequestDto requestDto,
+    public CommunityResponseDto updateCommunityPost(Long communityId, UpdateCommunityRequestDto requestDto,
                                                     MultipartFile[] multipartFileList) throws IOException {
 
         List<String> updateImageUrlList = new ArrayList<>();
@@ -107,18 +104,18 @@ public class CommunityService {
         * 4. 이미지 변경(기존 이미지 삭제 후 새로운 이미지 저장 */
         if (requestDto.getImgId() == null && multipartFileList == null) {
             /* 1. */
-            community.updatePost(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory());
+            community.updatePost(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory(), requestDto.getAddress());
             /* 수정된 게시글 정보 반환*/
             return new CommunityResponseDto(community);
         } else if (requestDto.getImgId() == null) {
             /* 2. */
-            community.updatePost(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory());
+            community.updatePost(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory(), requestDto.getAddress());
             saveImgToS3(multipartFileList, community, updateImageUrlList, updateImageNameList);
             /* 수정된 게시글 정보 반환*/
             return new CommunityResponseDto(community, updateImageUrlList, updateImageNameList);
         } else if (multipartFileList == null) {
             /* 3. */
-            community.updatePost(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory());
+            community.updatePost(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory(), requestDto.getAddress());
             /* 수정된 게시글 정보 반환*/
             return new CommunityResponseDto(community);
         }
@@ -129,11 +126,11 @@ public class CommunityService {
         }
         CommunityImage deleteCommunityImage = communityImageRepository.findById(requestDto.getImgId())
                         .orElseThrow(() -> new CustomException(NOT_EXIST_IMG));
-        s3UploadService.deleteFile(deleteCommunityImage.getImageName());
+        s3UploadService.deleteFile(deleteCommunityImage.getS3name());
         communityImageRepository.delete(deleteCommunityImage);
 
         saveImgToS3(multipartFileList, community, updateImageUrlList, updateImageNameList);
-        community.updatePost(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory());
+        community.updatePost(requestDto.getTitle(), requestDto.getContent(), requestDto.getCategory(), requestDto.getAddress());
 
         return new CommunityResponseDto(community, updateImageUrlList, updateImageNameList);
     }

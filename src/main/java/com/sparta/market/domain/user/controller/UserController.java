@@ -43,7 +43,7 @@ public class UserController {
     @PostMapping("/signup/send-code-phone")
     public ResponseEntity<?> sendCodeToPhone(@Valid @RequestBody PhoneDto phoneDto){
         String verificationCode = userService.sendCodeToPhone(phoneDto);
-        return ResponseEntity.ok().body(ResponseDto.success("문자 전송 성공", "문자를 확인해주세요 (" + verificationCode +")"));
+        return ResponseEntity.ok().body("문자를 확인해주세요 (" + verificationCode +")");
     }
 
     @Operation(summary = "전화 회원가입 인증번호 검증",
@@ -52,9 +52,9 @@ public class UserController {
     public ResponseEntity<?> checkPhoneCode(@Valid @RequestBody PhoneCheckDto phoneCheckDto){
         boolean result = userService.checkPhoneCode(phoneCheckDto);
         if (result) {
-            return ResponseEntity.ok().body(ResponseDto.success("인증번호가 일치합니다.", result));
+            return ResponseEntity.ok().body("인증번호가 일치합니다.");
         } else {
-            return ResponseEntity.ok().body(ResponseDto.success("인증번호가 일치하지 않습니다.", result));
+            return ResponseEntity.ok().body("인증번호가 일치하지 않습니다.");
         }
     }
 
@@ -63,7 +63,7 @@ public class UserController {
     @PostMapping("/signup/send-code-email")
     public ResponseEntity<?> sendEmail(@RequestParam("email") @Email String email){
         String verificationCode = userService.sendCodeToEmail(email);
-        return ResponseEntity.ok().body(ResponseDto.success("이메일 전송 완료", "인증번호를 확인해주세요! (" + verificationCode + ")"));
+        return ResponseEntity.ok().body( "인증번호를 확인해주세요! (" + verificationCode + ")");
     }
 
     @Operation(summary = "이메일 인증번호 검증",
@@ -72,9 +72,9 @@ public class UserController {
     public ResponseEntity<?> checkEmailCode(@Valid @RequestBody EmailCheckDto emailCheckDto){
         boolean result = userService.checkEmailCode(emailCheckDto);
         if (result) {
-            return ResponseEntity.ok().body(ResponseDto.success("인증번호가 일치합니다.", result));
+            return ResponseEntity.ok().body("인증번호가 일치합니다.");
         } else {
-            return ResponseEntity.ok().body(ResponseDto.success("인증번호가 일치하지 않습니다.", result));
+            return ResponseEntity.ok().body("인증번호가 일치하지 않습니다.");
         }
     }
 
@@ -84,23 +84,23 @@ public class UserController {
     public ResponseEntity<?> signup(@RequestPart(value = "files", required = false) MultipartFile multipartFile,
                                     @Valid @RequestPart(value = "signupRequestDto") SignupRequestDto requestDto) throws IOException {
         SignupResponseDto responseDto = userService.signUp(requestDto, multipartFile);
-        return ResponseEntity.ok().body(ResponseDto.success("등록 성공", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 
     /* Swagger용 API */
-    @Operation(summary = "이메일, 비밀번호 방식 (회의 필요)",
-            description = "회원가입 방식 수정 예정")
-    @PostMapping("/login")
-    public void login(@RequestBody LoginRequestDto requestDto) {
-
-    }
+//    @Operation(summary = "이메일, 비밀번호 방식 (회의 필요)",
+//            description = "회원가입 방식 수정 예정")
+//    @PostMapping("/login")
+//    public void login(@RequestBody LoginRequestDto requestDto) {
+//
+//    }
 
     @Operation(summary = "전화번호로 로그인 (인증코드 전송)",
             description = "전화번호 입력 -> 인증코드 전송")
     @PostMapping("/login/send-code-phone")
     public ResponseEntity<?> sendCodeToPhoneLogin(@Valid @RequestBody PhoneDto phoneDto) {
         String verificationCode = userService.sendCodeToPhoneLogin(phoneDto);
-        return ResponseEntity.ok().body(ResponseDto.success("문자 전송 성공", "문자를 확인해주세요 (" + verificationCode +")"));
+        return ResponseEntity.ok().body( "문자를 확인해주세요 (" + verificationCode +")");
     }
 
     @Operation(summary = "전화번호로 로그인 (인증코드, 전화번호 필요)",
@@ -109,8 +109,8 @@ public class UserController {
     public ResponseEntity<?> loginByPhone(@RequestBody PhoneLoginRequestDto requestDto){
         PhoneLoginResponseDto responseDto = userService.loginByPhone(requestDto);
         if (responseDto == null) {
-            return ResponseEntity.ok().body(ResponseDto.success("로그인 실패", null));
+            return ResponseEntity.ok().body("로그인 실패");
         }
-        return ResponseEntity.ok().body(ResponseDto.success("로그인 성공", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 }

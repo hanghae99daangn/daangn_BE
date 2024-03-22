@@ -24,7 +24,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.writeValue(os, ResponseDto.error(
                     ErrorCode.AUTHORITY_ACCESS.getKey(),
-                    ErrorCode.AUTHORITY_ACCESS.getMessage(),
+                    ErrorCode.AUTHORITY_ACCESS.getMessage() + " 로그인 여부를 확인해주세요!",
                     ErrorCode.AUTHORITY_ACCESS.getHttpStatus()));
             os.flush();
         }

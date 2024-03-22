@@ -4,7 +4,6 @@ import com.sparta.market.domain.trade.dto.TradeRequestDto.CreateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeRequestDto.UpdateTradeRequestDto;
 import com.sparta.market.domain.trade.dto.TradeResponseDto.*;
 import com.sparta.market.domain.trade.service.TradeService;
-import com.sparta.market.global.common.dto.ResponseDto;
 import com.sparta.market.global.security.config.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.List;
 
 @Tag(name = "거래글 API", description = "거래글 CRUD")
 @Slf4j(topic = "거래글 로그")
@@ -64,9 +62,8 @@ public class TradeController {
     public ResponseEntity<?> getAllPostList(@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
         Page<GetPostListResponseDto> postList = tradeService.getAllPostList(page);
         return ResponseEntity.ok().body(postList);
-//        return postList; Page<GetPostListResponseDto>
     }
-// Page<GetPostListResponseDto>
+
     @Operation(summary = "판매글 상세 조회",
             description = "조회시, 판매글의 Id를 입력하세요!")
     @GetMapping("/trades/{tradeId}")
@@ -81,7 +78,6 @@ public class TradeController {
     public ResponseEntity<?> getCategoryPostList(@RequestParam String category, @RequestParam(value = "page", required = false, defaultValue = "1") int page){
         Page<GetCategoryPostListResponseDto> categoryList = tradeService.getCategoryPostList(category, page);
         return ResponseEntity.ok().body(categoryList);
-//        return ResponseEntity.ok().body(categoryList);
     }
 
     @Operation(summary = "좋아요 기능",

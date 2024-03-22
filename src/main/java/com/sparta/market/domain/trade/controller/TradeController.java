@@ -36,7 +36,7 @@ public class TradeController {
                                          @Valid @RequestPart(value = "createTradeRequestDto") CreateTradeRequestDto requestDto,
                                          @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
         CreateTradeResponseDto responseDto = tradeService.createTrade(requestDto, multipartFileList, userDetails.getUser());
-        return ResponseEntity.ok().body(ResponseDto.success("거래 글 등록 성공", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 
     @Operation(summary = "게시글 수정",
@@ -47,7 +47,7 @@ public class TradeController {
                                          @PathVariable Long tradeId,
                                          @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException {
         UpdateTradeResponseDto responseDto = tradeService.updateTrade(tradeId, requestDto, multipartFileList, userDetails.getUser());
-        return ResponseEntity.ok().body(ResponseDto.success("거래 글 수정 성공", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 
     @Operation(summary = "게시글 삭제",
@@ -55,7 +55,7 @@ public class TradeController {
     @DeleteMapping("/trades/{tradeId}")
     public ResponseEntity<?> deleteTrade(@PathVariable Long tradeId, @AuthenticationPrincipal UserDetailsImpl userDetails){
         tradeService.deletePost(tradeId, userDetails.getUser());
-        return ResponseEntity.ok().body(ResponseDto.success("삭제가 완료되었습니다.", "밤양갱"));
+        return ResponseEntity.ok().body("삭제가 완료되었습니다.");
     }
 
     @Operation(summary = "판매글 전체 조회",
@@ -63,15 +63,16 @@ public class TradeController {
     @GetMapping("/trades")
     public ResponseEntity<?> getAllPostList(@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
         Page<GetPostListResponseDto> postList = tradeService.getAllPostList(page);
-        return ResponseEntity.ok().body(ResponseDto.success("전체 판매글 조회 성공", postList));
+        return ResponseEntity.ok().body(postList);
+//        return postList; Page<GetPostListResponseDto>
     }
-
+// Page<GetPostListResponseDto>
     @Operation(summary = "판매글 상세 조회",
             description = "조회시, 판매글의 Id를 입력하세요!")
     @GetMapping("/trades/{tradeId}")
     public ResponseEntity<?> getDetailPost(@PathVariable Long tradeId) {
         GetPostResponseDto responseDto = tradeService.getDetailPost(tradeId);
-        return ResponseEntity.ok().body(ResponseDto.success("전체 판매글 조회 성공", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 
     @Operation(summary = "카테고리별 판매글 전체 조회",
@@ -79,7 +80,8 @@ public class TradeController {
     @GetMapping("/trades/category")
     public ResponseEntity<?> getCategoryPostList(@RequestParam String category, @RequestParam(value = "page", required = false, defaultValue = "1") int page){
         Page<GetCategoryPostListResponseDto> categoryList = tradeService.getCategoryPostList(category, page);
-        return ResponseEntity.ok().body(ResponseDto.success("카테고리별 판매글 조회 성공", categoryList));
+        return ResponseEntity.ok().body(categoryList);
+//        return ResponseEntity.ok().body(categoryList);
     }
 
     @Operation(summary = "좋아요 기능",
@@ -87,6 +89,6 @@ public class TradeController {
     @PostMapping("/trades/likes/{tradeId}")
     public ResponseEntity<?> updateLike(@PathVariable Long tradeId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         boolean check = tradeService.updateLike(tradeId, userDetails.getUser());
-        return ResponseEntity.ok().body(ResponseDto.success("좋아요 처리 완료", check));
+        return ResponseEntity.ok().body(check);
     }
 }

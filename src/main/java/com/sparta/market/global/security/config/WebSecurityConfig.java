@@ -87,6 +87,7 @@ public class WebSecurityConfig {
                         .requestMatchers(PUBLIC_URL).permitAll()
                         .requestMatchers("/").permitAll()
                         .requestMatchers("/user/**").permitAll()
+                        .requestMatchers("/address/search").permitAll()
                         .requestMatchers(HttpMethod.GET,"/trades/**").permitAll()
                         .requestMatchers(HttpMethod.GET,"/community/**").permitAll()
                         .anyRequest().authenticated()

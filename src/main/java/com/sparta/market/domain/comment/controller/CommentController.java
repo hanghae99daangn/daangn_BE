@@ -31,7 +31,7 @@ public class CommentController {
 
         CommentResponseDto responseDto = commentService.createComment(communityId, requestDto, userDetails);
 
-        return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 작성 완료", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 
     @PutMapping("/{communityId}/comment/{commentId}")
@@ -43,7 +43,7 @@ public class CommentController {
 
         CommentResponseDto responseDto = commentService.updateComment(communityId, commentId, requestDto, userDetails);
 
-        return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 수정 완료", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 
     @DeleteMapping("/{communityId}/comment/{commentId}")
@@ -53,7 +53,7 @@ public class CommentController {
 
         commentService.deleteComment(communityId, commentId, userDetails);
 
-        return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 삭제 완료", "엘든링"));
+        return ResponseEntity.ok().body("커뮤니티 댓글 삭제 완료");
     }
 
     @DeleteMapping("/{communityId}/comment/{commentId}/child/{childCommentId}")
@@ -63,7 +63,7 @@ public class CommentController {
                                                 @PathVariable Long childCommentId,
                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) {
         commentService.deleteChildComment(childCommentId, userDetails);
-        return ResponseEntity.ok().body(ResponseDto.success("대댓글 삭제 완료", "대댓글이 성공적으로 삭제되었습니다."));
+        return ResponseEntity.ok().body("대댓글 삭제 완료");
     }
 
     @GetMapping("/{communityId}/comments")
@@ -72,8 +72,6 @@ public class CommentController {
                                          @RequestParam("isAsc") boolean isAsc,
                                          @RequestParam(value = "page", defaultValue = "1") int page) {
 
-        return ResponseEntity.ok().body(
-          ResponseDto.success("커뮤니티 게시글의 댓글 목록 조회 성공",
-                  commentService.getComments(communityId, page -1, isAsc)));
+        return ResponseEntity.ok().body(commentService.getComments(communityId, page -1, isAsc));
     }
 }

@@ -1,16 +1,21 @@
 package com.sparta.market.domain.user.service;
 
-import com.sparta.market.domain.user.dto.SignupRequestDto;
-import com.sparta.market.domain.user.dto.SignupResponseDto;
+import com.sparta.market.domain.user.dto.*;
 import com.sparta.market.domain.user.entity.User;
 import com.sparta.market.domain.user.entity.UserProfile;
 import com.sparta.market.domain.user.entity.UserRoleEnum;
 import com.sparta.market.domain.user.repository.UserProfileRepository;
 import com.sparta.market.domain.user.repository.UserRepository;
 import com.sparta.market.global.aws.service.S3UploadService;
+import com.sparta.market.global.common.dto.ResponseDto;
 import com.sparta.market.global.common.exception.CustomException;
 import com.sparta.market.global.common.exception.ErrorCode;
+import com.sparta.market.global.redis.RedisUtil;
+import com.sparta.market.global.sms.EmailHtmlString;
+import com.sparta.market.global.sms.MailService;
+import com.sparta.market.global.sms.SmsUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,15 +30,15 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final S3UploadService s3UploadService;
     private final UserProfileRepository userProfileRepository;
+    private final MailService mailService;
+    private final SmsUtil smsUtil;
+    private final RedisUtil redisUtil;
+    private final EmailHtmlString emailHtmlString;
 
     public SignupResponseDto signUp(SignupRequestDto requestDto, MultipartFile multipartFile) throws IOException {
-        if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
-            throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
-        }
 
-        if (userRepository.findByPhoneNumber(requestDto.getPhoneNumber()).isPresent()) {
-            throw new CustomException(ErrorCode.DUPLICATED_PHONE_NUMBER);
-        }
+        checkDuplicatedEmail(requestDto.getEmail());
+        checkDuplicatedPhone(requestDto.getPhoneNumber());
 
         String password = passwordEncoder.encode(requestDto.getPassword());
 
@@ -56,4 +61,61 @@ public class UserService {
         return new SignupResponseDto(savedUser);
     }
 
+    public String sendCodeToPhone(PhoneDto checkDto) {
+        checkDuplicatedPhone(checkDto.getPhoneNumber());
+
+        String phoneNumber = checkDto.getPhoneNumber().replaceAll(" ","");
+        String verificationCode = smsUtil.createCode();
+        redisUtil.setDataExpire(verificationCode, phoneNumber, 60*5L);
+
+        return verificationCode;
+    }
+
+    public boolean checkPhoneCode(PhoneCheckDto phoneCheckDto) {
+        String phoneNumber = phoneCheckDto.getPhoneNumber().replaceAll(" ","");
+        try {
+            String result = redisUtil.getData(phoneCheckDto.getVerificationCode());
+            return result.equals(phoneNumber);
+        } catch (NullPointerException e) {
+            throw new CustomException(ErrorCode.MSG_TIME_OUT);
+        }
+    }
+
+    public String sendCodeToEmail(String email) {
+        checkDuplicatedEmail(email);
+
+        String verificationCode = smsUtil.createCode();
+        redisUtil.setDataExpire(verificationCode, email, 60 * 5L);
+
+        String title = "[바니마켓] 이메일 인증번호 요청";
+
+        String content = emailHtmlString.generateEmailHtmlContent(verificationCode);
+        mailService.sendEmail(email, title, content);
+
+        return verificationCode;
+    }
+
+    public boolean checkEmailCode(EmailCheckDto emailCheckDto) {
+        String email = emailCheckDto.getEmail();
+        try {
+            String result = redisUtil.getData(emailCheckDto.getVerificationCode());
+            return result.equals(email);
+        } catch (NullPointerException e) {
+            throw new CustomException(ErrorCode.MSG_TIME_OUT);
+        }
+    }
+
+    /* 검증 및 로직 메서드 */
+
+    private void checkDuplicatedEmail(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            throw new CustomException(ErrorCode.DUPLICATED_EMAIL);
+        }
+    }
+
+    private void checkDuplicatedPhone(String phoneNumber) {
+        if (userRepository.findByPhoneNumber(phoneNumber).isPresent()) {
+            throw new CustomException(ErrorCode.DUPLICATED_PHONE_NUMBER);
+        }
+    }
 }

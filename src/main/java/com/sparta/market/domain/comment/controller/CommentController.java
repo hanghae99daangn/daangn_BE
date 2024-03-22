@@ -56,6 +56,16 @@ public class CommentController {
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 삭제 완료", "엘든링"));
     }
 
+    @DeleteMapping("/{communityId}/comment/{commentId}/child/{childCommentId}")
+    @Operation(summary = "Delete Child Comment", description = "커뮤니티 게시글의 대댓글을 삭제합니다.")
+    public ResponseEntity<?> deleteChildComment(@PathVariable Long communityId,
+                                                @PathVariable Long commentId,
+                                                @PathVariable Long childCommentId,
+                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        commentService.deleteChildComment(childCommentId, userDetails);
+        return ResponseEntity.ok().body(ResponseDto.success("대댓글 삭제 완료", "대댓글이 성공적으로 삭제되었습니다."));
+    }
+
     @GetMapping("/{communityId}/comments")
     @Operation(summary = "Get Comments", description = "커뮤티니 게시글의 댓글 목록을 조회합니다.")
     public ResponseEntity<?> getComments(@PathVariable Long communityId,

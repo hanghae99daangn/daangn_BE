@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface CommentCustomRepository {
     Optional<Comment> findByCommunityAndCommentId(Community community, Long commentId);
 
-    Page<Comment> findByCommunity(Community community, Pageable pageable);
+    Page<Comment> findByCommunityAndParentCommentIsNull(Community community, Pageable pageable);
 }

@@ -19,6 +19,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static com.sparta.market.global.common.exception.ErrorCode.*;
 
 @Tag(name = "커뮤니티 게시글 댓글 기능", description = "커뮤니티 게시글에 댓글 작성(추가), 수정, 조회, 삭제 기능")
@@ -45,8 +49,20 @@ public class CommentService {
         /* 커뮤니티 게시글 검증*/
         Community community = validateCommunity(communityId);
 
+        /* 부모 댓글 여부 확인*/
+        Comment parentComment = null;
+        if (requestDto.getParentCommentId() != null) {
+            parentComment = commentRepository.findById(requestDto.getParentCommentId())
+                    .orElseThrow(() -> new CustomException(NOT_EXIST_COMMENT));
+        }
+
         /* 댓글 추가(생성)*/
-        Comment comment = new Comment(requestDto.getCommentContent(), community, user);
+        Comment comment = Comment.builder()
+                .commentContent(requestDto.getCommentContent())
+                .community(community)
+                .user(user)
+                .parentComment(parentComment)
+                .build();
 
         commentRepository.save(comment);
 
@@ -67,7 +83,7 @@ public class CommentService {
         return new CommentResponseDto(comment);
     }
 
-    /* 커뮤니티 게시글 댓글 삭제*/
+    /* 커뮤니티 게시글 댓글 삭제 - 부모 댓글*/
     @Transactional
     public void deleteComment(Long communityId, Long commentId, UserDetailsImpl userDetails) {
         /* 유저 정보 검증*/
@@ -76,8 +92,46 @@ public class CommentService {
         /* 커뮤니티 게시글, 댓글 및 댓글에 대한 유저 권한 검증*/
         Comment comment = validateCommentOwnership(communityId, commentId, user);
 
-        commentRepository.delete(comment);
+        /* 대댓글이 있는 부모 댓글인 경우, 내용만 "삭제된 댓글입니다"로 변경*/
+        if (!comment.getChildComments().isEmpty()) {
+            comment.markAsDeleted();
+        } else {
+            /* 자식 댓글이 없는 경우(단독 댓글이거나 모든 자식 댓글이 이미 삭제된 상태), 댓글을 실제로 삭제*/
+            commentRepository.delete(comment);
+        }
     }
+
+    /* 커뮤니티 게시글 댓글 삭제 - 자식 댓글(대댓글)*/
+    @Transactional
+    public void deleteChildComment(Long childCommentId, UserDetailsImpl userDetails) {
+        User user = findAuthenticatedUser(userDetails);
+
+        /* 대댓글 조회*/
+        Comment childComment = commentRepository.findById(childCommentId)
+                .orElseThrow(() -> new CustomException(NOT_EXIST_COMMENT));
+
+        /* 대댓글의 작성자가 현재 사용자와 일치하는지 확인*/
+        if (!childComment.getUser().getId().equals(user.getId())) {
+            throw new CustomException(NOT_YOUR_COMMENT);
+        }
+
+        /* 자식 댓글(대댓글) 삭제*/
+        commentRepository.delete(childComment);
+
+        /* 부모 댓글이 삭제 상태일 경우 자식 댓글이 모두 삭제되면 부모 댓글을 DB에서 삭제*/
+        Comment parentComment = childComment.getParentComment();
+        if (parentComment != null && parentComment.isDeleted()) {
+            /* 모든 자식 댓글이 삭제되었는지 확인 */
+            long remainingChildren = parentComment.getChildComments().stream()
+                    .filter(c -> !c.getCommentId().equals(childCommentId) && !c.isDeleted())
+                    .count();
+
+            if (remainingChildren == 0) {
+                commentRepository.delete(parentComment);
+            }
+        }
+    }
+
 
     /* 커뮤니티 게시글 댓글 목록 조회*/
     @Transactional(readOnly = true)
@@ -90,9 +144,15 @@ public class CommentService {
         Pageable pageable = validateAndCreatePageable(page, isAsc);
 
         /* 페이징 처리*/
-        Page<Comment> commentPage = commentRepository.findByCommunity(community, pageable);
+        Page<Comment> commentPage = commentRepository.findByCommunityAndParentCommentIsNull(community, pageable);
 
-        return commentPage.map(CommentResponseDto::new);
+        /* 대댓글 정보를 포함하여 DTO 변환*/
+        return commentPage.map(comment -> {
+            List<CommentResponseDto> childComments = comment.getChildComments().stream()
+                    .map(child -> new CommentResponseDto(child, Collections.emptyList())) // 대댓글의 대댓글은 고려하지 않음
+                    .collect(Collectors.toList());
+            return new CommentResponseDto(comment, childComments);
+        });
     }
 
 

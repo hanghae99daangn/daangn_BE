@@ -1,6 +1,6 @@
 package com.sparta.market.domain.comment.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.*;
 import com.sparta.market.domain.community.entity.Community;
 import com.sparta.market.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,6 +14,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -46,11 +48,34 @@ public class Comment {
     @Schema(name = "댓글 생성 시간")
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id")
+    @Schema(name = "부모 댓글 여부 확인")
+    private Comment parentComment;
+
+    @OneToMany(mappedBy = "parentComment", orphanRemoval = true)
+    @Schema(name = "대댓글 목록")
+    private List<Comment> childComments = new ArrayList<>();
+
+    @Column(name = "is_deleted", nullable = false)
+    @Schema(name = "부모 댓글 삭제 상태")
+    private boolean isDeleted = false;
+
     @Builder
-    public Comment(String commentContent, Community community, User user) {
+    public Comment(String commentContent, Community community, User user, Comment parentComment) {
         this.commentContent = commentContent;
         this.community = community;
         this.user = user;
+        this.parentComment = parentComment;
+    }
+
+    public void markAsDeleted() {
+        this.isDeleted = true;
+        this.updateComment("삭제된 댓글입니다");
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
     }
 
     public void updateComment(String commentContent) {

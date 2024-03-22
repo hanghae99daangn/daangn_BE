@@ -4,10 +4,12 @@ import com.sparta.market.domain.comment.dto.CommentRequestDto;
 import com.sparta.market.domain.comment.dto.CommentResponseDto;
 import com.sparta.market.domain.comment.service.CommentService;
 import com.sparta.market.global.common.dto.ResponseDto;
+import com.sparta.market.global.security.config.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Comment Controller", description = "댓글 기능 컨트롤러")
@@ -24,30 +26,44 @@ public class CommentController {
 
     @PostMapping("/{communityId}/comment")
     @Operation(summary = "Create Comment", description = "커뮤니티 게시글에 댓글을 등록합니다.")
-    public ResponseEntity<?> createComment(@PathVariable Long communityId, @RequestBody CommentRequestDto requestDto) {
+    public ResponseEntity<?> createComment(@PathVariable Long communityId, @RequestBody CommentRequestDto requestDto,
+                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        CommentResponseDto responseDto = commentService.createComment(communityId, requestDto);
+        CommentResponseDto responseDto = commentService.createComment(communityId, requestDto, userDetails);
 
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 작성 완료", responseDto));
     }
 
     @PutMapping("/{communityId}/comment/{commentId}")
     @Operation(summary = "Update Comment", description = "커뮤니티 게시글의 댓글을 수정합니다.")
-    public ResponseEntity<?> updateComment(@PathVariable Long communityId, @PathVariable Long commentId,
-                                           @RequestBody CommentRequestDto requestDto) {
+    public ResponseEntity<?> updateComment(@PathVariable Long communityId,
+                                           @PathVariable Long commentId,
+                                           @RequestBody CommentRequestDto requestDto,
+                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        CommentResponseDto responseDto = commentService.updateComment(communityId, commentId, requestDto);
+        CommentResponseDto responseDto = commentService.updateComment(communityId, commentId, requestDto, userDetails);
 
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 수정 완료", responseDto));
     }
 
     @DeleteMapping("/{communityId}/comment/{commentId}")
     @Operation(summary = "Delete Comment", description = "커뮤니티 게시글의 댓글을 삭제합니다.")
-    public ResponseEntity<?> deleteComment(@PathVariable Long communityId, @PathVariable Long commentId) {
+    public ResponseEntity<?> deleteComment(@PathVariable Long communityId, @PathVariable Long commentId,
+                                           @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        commentService.deleteComment(communityId, commentId);
+        commentService.deleteComment(communityId, commentId, userDetails);
 
         return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 댓글 삭제 완료", "엘든링"));
+    }
+
+    @DeleteMapping("/{communityId}/comment/{commentId}/child/{childCommentId}")
+    @Operation(summary = "Delete Child Comment", description = "커뮤니티 게시글의 대댓글을 삭제합니다.")
+    public ResponseEntity<?> deleteChildComment(@PathVariable Long communityId,
+                                                @PathVariable Long commentId,
+                                                @PathVariable Long childCommentId,
+                                                @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        commentService.deleteChildComment(childCommentId, userDetails);
+        return ResponseEntity.ok().body(ResponseDto.success("대댓글 삭제 완료", "대댓글이 성공적으로 삭제되었습니다."));
     }
 
     @GetMapping("/{communityId}/comments")

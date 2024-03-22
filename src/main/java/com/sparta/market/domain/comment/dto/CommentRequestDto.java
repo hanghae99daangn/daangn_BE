@@ -9,9 +9,11 @@ import lombok.NoArgsConstructor;
 public class CommentRequestDto {
 
     private String commentContent;
+    private Long parentCommentId;
 
     @Builder
-    public CommentRequestDto(String commentContent) {
+    public CommentRequestDto(String commentContent, Long parentCommentId) {
         this.commentContent = commentContent;
+        this.parentCommentId = parentCommentId;
     }
 }

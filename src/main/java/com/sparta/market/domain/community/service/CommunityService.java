@@ -10,14 +10,13 @@ import com.sparta.market.domain.user.entity.User;
 import com.sparta.market.domain.user.repository.UserRepository;
 import com.sparta.market.global.aws.service.S3UploadService;
 import com.sparta.market.global.common.exception.CustomException;
+import com.sparta.market.global.security.config.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,9 +49,10 @@ public class CommunityService {
     /*커뮤니티 게시글 생성 로직*/
     @Transactional
     public CommunityResponseDto createCommunityPost(CommunityRequestDto requestDto,
-                                                    MultipartFile[] multipartFileList) throws IOException {
+                                                    MultipartFile[] multipartFileList,
+                                                    UserDetailsImpl userDetails) throws IOException {
         /*유저 정보 검증*/
-        User user = getAuthenticatedUser();
+        User user = findAuthenticatedUser(userDetails);
 
         /*Builder 사용 entity 객체 생성*/
         Community community = Community.builder()
@@ -86,13 +86,13 @@ public class CommunityService {
     /* 커뮤니티 게시글 수정 로직*/
     @Transactional
     public CommunityResponseDto updateCommunityPost(Long communityId, UpdateCommunityRequestDto requestDto,
-                                                    MultipartFile[] multipartFileList) throws IOException {
+                                                    MultipartFile[] multipartFileList, UserDetailsImpl userDetails) throws IOException {
 
         List<String> updateImageUrlList = new ArrayList<>();
         List<String> updateImageNameList = new ArrayList<>();
 
         /* 유저 정보 검증*/
-        User user = getAuthenticatedUser();
+        User user = findAuthenticatedUser(userDetails);
 
         /* 게시글 및 게시글에 대한 유저 권한 검증 */
         Community community = validatePostOwnership(communityId, user);
@@ -137,9 +137,9 @@ public class CommunityService {
 
     /* 커뮤니티 게시글 삭제 로직*/
     @Transactional
-    public void deleteCommunityPost(Long communityId) {
+    public void deleteCommunityPost(Long communityId, UserDetailsImpl userDetails) {
         /* 유저 정보 검증*/
-        User user = getAuthenticatedUser();
+        User user = findAuthenticatedUser(userDetails);
 
         /* 게시글 및 게시글에 대한 유저 권한 검증 */
         Community community = validatePostOwnership(communityId, user);
@@ -212,10 +212,8 @@ public class CommunityService {
 
     /* 검증 메서드 필드*/
     /*유저 정보 검증 메서드*/
-    private User getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
-        return userRepository.findByEmail(userEmail)
+    private User findAuthenticatedUser(UserDetailsImpl userDetails) {
+        return userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new CustomException(NOT_EXIST_USER));
     }
 

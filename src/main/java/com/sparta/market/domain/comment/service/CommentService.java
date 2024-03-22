@@ -9,14 +9,13 @@ import com.sparta.market.domain.community.repository.CommunityRepository;
 import com.sparta.market.domain.user.entity.User;
 import com.sparta.market.domain.user.repository.UserRepository;
 import com.sparta.market.global.common.exception.CustomException;
+import com.sparta.market.global.security.config.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,9 +38,9 @@ public class CommentService {
 
     /* 커뮤니티 게시글 댓글 추가*/
     @Transactional
-    public CommentResponseDto createComment(Long communityId, CommentRequestDto requestDto) {
+    public CommentResponseDto createComment(Long communityId, CommentRequestDto requestDto, UserDetailsImpl userDetails) {
         /* 유저 정보 검증*/
-        User user = getAuthenticatedUser();
+        User user = findAuthenticatedUser(userDetails);
 
         /* 커뮤니티 게시글 검증*/
         Community community = validateCommunity(communityId);
@@ -56,9 +55,9 @@ public class CommentService {
 
     /* 커뮤니티 게시글 댓글 수정*/
     @Transactional
-    public CommentResponseDto updateComment(Long communityId, Long commentId, CommentRequestDto requestDto) {
+    public CommentResponseDto updateComment(Long communityId, Long commentId, CommentRequestDto requestDto, UserDetailsImpl userDetails) {
         /* 유저 정보 검증*/
-        User user = getAuthenticatedUser();
+        User user = findAuthenticatedUser(userDetails);
 
         /* 커뮤니티 게시글, 댓글 및 댓글에 대한 유저 권한 검증*/
         Comment comment = validateCommentOwnership(communityId, commentId, user);
@@ -70,9 +69,9 @@ public class CommentService {
 
     /* 커뮤니티 게시글 댓글 삭제*/
     @Transactional
-    public void deleteComment(Long communityId, Long commentId) {
+    public void deleteComment(Long communityId, Long commentId, UserDetailsImpl userDetails) {
         /* 유저 정보 검증*/
-        User user = getAuthenticatedUser();
+        User user = findAuthenticatedUser(userDetails);
 
         /* 커뮤니티 게시글, 댓글 및 댓글에 대한 유저 권한 검증*/
         Comment comment = validateCommentOwnership(communityId, commentId, user);
@@ -99,10 +98,8 @@ public class CommentService {
 
     /* 검증 메서드 필드*/
     /*유저 정보 검증 메서드*/
-    private User getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = authentication.getName();
-        return userRepository.findByEmail(userEmail)
+    private User findAuthenticatedUser(UserDetailsImpl userDetails) {
+        return userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new CustomException(NOT_EXIST_USER));
     }
 

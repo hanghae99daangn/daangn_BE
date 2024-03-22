@@ -8,12 +8,14 @@ import com.sparta.market.domain.community.entity.CommunityCategory;
 import com.sparta.market.domain.community.service.CommunityService;
 import com.sparta.market.global.common.dto.ResponseDto;
 import com.sparta.market.global.common.exception.CustomException;
+import com.sparta.market.global.security.config.UserDetailsImpl;
 import io.jsonwebtoken.io.IOException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,11 +36,12 @@ public class CommunityController {
     @PostMapping(value = "/community", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE, MediaType.APPLICATION_JSON_VALUE})
     /*@RequestPart 사용 이미지 업로드 추가 리팩토링 예정*/
     public ResponseEntity<?> createCommunityPost(@RequestPart(value = "files", required = false)MultipartFile[] multipartFilesList,
-                                                 @RequestPart(value = "CommunityRequestDto") CommunityRequestDto requestDto) throws IOException, java.io.IOException {
+                                                 @RequestPart(value = "CommunityRequestDto") CommunityRequestDto requestDto,
+                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException, java.io.IOException {
 
-        CommunityResponseDto responseDto = communityService.createCommunityPost(requestDto, multipartFilesList);
+        CommunityResponseDto responseDto = communityService.createCommunityPost(requestDto, multipartFilesList, userDetails);
 
-        return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 글 작성 성공", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 
     @Operation(summary = "커뮤니티 게시글 수정", description = "등록한 커뮤니티 게시글의 내용을 수정할 수 있습니다.")
@@ -46,20 +49,21 @@ public class CommunityController {
     /*@RequestPart 사용 업로드 이미지 수정 리팩토링 예정*/
     public ResponseEntity<?> updateCommunityPost(@PathVariable Long communityId,
                                                  @RequestPart(value = "files", required = false) MultipartFile[] multipartFilesList,
-                                                 @RequestPart(value = "UpdateCommunityRequestDto") UpdateCommunityRequestDto requestDto) throws IOException, java.io.IOException {
+                                                 @RequestPart(value = "UpdateCommunityRequestDto") UpdateCommunityRequestDto requestDto,
+                                                 @AuthenticationPrincipal UserDetailsImpl userDetails) throws IOException, java.io.IOException {
 
-        CommunityResponseDto responseDto = communityService.updateCommunityPost(communityId, requestDto, multipartFilesList);
+        CommunityResponseDto responseDto = communityService.updateCommunityPost(communityId, requestDto, multipartFilesList, userDetails);
 
-        return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 글 수정 성공", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 
     @Operation(summary = "커뮤니티 게시글 삭제", description = "등록한 커뮤니티 게시글을 삭제합니다.")
     @DeleteMapping("/community/{communityId}")
-    public ResponseEntity<?> deleteCommunityPost(@PathVariable Long communityId) {
+    public ResponseEntity<?> deleteCommunityPost(@PathVariable Long communityId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        communityService.deleteCommunityPost(communityId);
+        communityService.deleteCommunityPost(communityId, userDetails);
 
-        return ResponseEntity.ok().body(ResponseDto.success("커뮤니티 글 삭제 성공", "엘든링"));
+        return ResponseEntity.ok().body("커뮤니티 글 삭제 성공");
     }
 
     @Operation(summary = "선택한 커뮤니티 게시글 조회", description = "선택한 커뮤니티 게시글의 정보를 조회합니다.")
@@ -68,7 +72,7 @@ public class CommunityController {
 
         GetCommunityResponseDto responseDto = communityService.findCommunityPost(communityId);
 
-        return ResponseEntity.ok().body(ResponseDto.success("선택한 게시글 조회 성공", responseDto));
+        return ResponseEntity.ok().body(responseDto);
     }
 
     @Operation(summary = "전체 커뮤니티 게시글 조회", description = "전체 커뮤니티 게시글 목록을 조회합니다, 카테고리별 필터링 기능도 사용할 수 있습니다.")
@@ -83,9 +87,7 @@ public class CommunityController {
                 /* 카테고리 입력 시 카테고리 별 조회 처리*/
                 CommunityCategory category = CommunityCategory.valueOf(categoryName.toUpperCase());
 
-                return ResponseEntity.ok().body(
-                        ResponseDto.success("카테고리별 커뮤니티 게시글 조회 성공",
-                                communityService.getCommunityByCategory(page - 1, isAsc, category)));
+                return ResponseEntity.ok().body(communityService.getCommunityByCategory(page - 1, isAsc, category));
             } catch (CustomException e) {
                 /* 잘못된 카테고리 값 입력에 대한 처리*/
                 return ResponseEntity.badRequest().body(ResponseDto.error(INVALID_CATEGORY_INPUT.getKey(), INVALID_CATEGORY_INPUT.getMessage(), categoryName));
@@ -93,8 +95,6 @@ public class CommunityController {
         }
 
         /* 카테고리 입력 없을 때 전체 게시글 목록 조회 처리*/
-        return ResponseEntity.ok().body(
-                ResponseDto.success("전체 커뮤니티 게시글 조회 성공",
-                        communityService.getAllCommunity(page - 1, isAsc)));
+        return ResponseEntity.ok().body(communityService.getAllCommunity(page - 1, isAsc));
     }
 }

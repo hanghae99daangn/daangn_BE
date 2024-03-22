@@ -32,17 +32,17 @@ public class CommentRepositoryImpl implements CommentCustomRepository {
     }
 
     @Override
-    public Page<Comment> findByCommunity(Community community, Pageable pageable) {
+    public Page<Comment> findByCommunityAndParentCommentIsNull(Community community, Pageable pageable) {
         QComment comment = QComment.comment;
 
-        /* QueryDSL 쿼리 준비*/
+        /* 부모 댓글이 null인 조건을 추가하여 QueryDSL 쿼리 구성*/
         JPAQuery<Comment> query = queryFactory
                 .selectFrom(comment)
-                .where(comment.community.eq(community));
+                .where(comment.community.eq(community)
+                        .and(comment.parentComment.isNull()));
 
-        /* 정렬 방향 결정*/
-        Sort.Order sortOrder = pageable.getSort().getOrderFor("createdAt");
-
+        /* 페이지네이션을 위한 정렬 및 페이징 적용*/
+        Sort.Order sortOrder = pageable.getSort().isSorted() ? pageable.getSort().iterator().next() : null;
         OrderSpecifier<?> orderBySpecifier = sortOrder != null
                 ? (sortOrder.isAscending() ? comment.createdAt.asc() : comment.createdAt.desc())
                 : comment.createdAt.asc();
@@ -55,10 +55,12 @@ public class CommentRepositoryImpl implements CommentCustomRepository {
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        /* fetchCount() deprecated 로 인해 사용 불가*/
+        /* 전체 개수 조회를 위한 쿼리
+        * fetchCount() deprecated 로 인해 사용 불가*/
         Long total = query.select(comment.count())
                 .from(comment)
-                .where(comment.community.eq(community))
+                .where(comment.community.eq(community)
+                        .and(comment.parentComment.isNull()))
                 .fetchOne();
 
         /* null 체크를 통해 NullPointerException 방지 */

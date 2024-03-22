@@ -18,7 +18,7 @@ public class AddressController {
     private final AddressService addressService;
 
     @GetMapping("/search")
-    public List<AddressResponseDto> searchAddress(@RequestParam String query) {
-        return addressService.searchAddress(query);
+    public List<AddressResponseDto> searchAddress(@RequestParam String partialAddress) {
+        return addressService.searchAddress(partialAddress);
     }
 }

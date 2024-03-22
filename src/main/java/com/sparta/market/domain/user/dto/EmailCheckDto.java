@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 public class EmailCheckDto {
-    @Schema(description = "전화번호", example = "010 1234 5678")
+    @Schema(description = "이메일", example = "test1234@test.com")
     @Email(message = "이메일 형식에 맞춰 작성해주세요!")
     private String email;
 

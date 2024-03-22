@@ -64,33 +64,25 @@ public class TradeService {
 
         /* 원래 이미지가 없던 글 + 파일도 업로드 안한 경우 */
         if (requestDto.getImgId() == null && multipartFileList == null) {
-            TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(
-                    () -> new CustomException(ErrorCode.NOT_EXIST_POST)
-            );
+            TradePost post = getTradePostByTradeIdAndUser(tradeId, user);
             post.update(requestDto);
             return new UpdateTradeResponseDto(post);
         }
         /* 이미지가 없다가, 등록하는 경우 */
         if (requestDto.getImgId() == null) {
-            TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(
-                    () -> new CustomException(ErrorCode.NOT_EXIST_POST)
-            );
+            TradePost post = getTradePostByTradeIdAndUser(tradeId, user);
             post.update(requestDto);
             saveImgToS3(multipartFileList, post, updateImageUrlList, updateImageNameList);
             return new UpdateTradeResponseDto(post, updateImageUrlList, updateImageNameList);
         }
         /* 이미지가 있었고, 내용만 수정하는 경우 */
         if (multipartFileList == null) {
-            TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(() ->
-                    new CustomException(ErrorCode.NOT_EXIST_POST)
-            );
+            TradePost post = getTradePostByTradeIdAndUser(tradeId, user);
             post.update(requestDto);
             return new UpdateTradeResponseDto(post);
         }
         /* 이미지를 바꾸는 경우 */
-        TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(() ->
-                new CustomException(ErrorCode.NOT_EXIST_POST)
-        );
+        TradePost post = getTradePostByTradeIdAndUser(tradeId, user);
         if (post.getPostImageList().get(0).getId() != requestDto.getImgId()) {
             throw new CustomException(ErrorCode.NOT_YOUR_IMG);
         }
@@ -151,9 +143,7 @@ public class TradeService {
 
     @Transactional
     public GetPostResponseDto getDetailPost(Long tradeId) {
-        TradePost post = tradePostRepository.findById(tradeId).orElseThrow(() ->
-                new CustomException(ErrorCode.NOT_EXIST_POST)
-        );
+        TradePost post = getTradePostById(tradeId);
         post.updateHit();
         return new GetPostResponseDto(post);
     }
@@ -169,9 +159,7 @@ public class TradeService {
     @Transactional
     public boolean updateLike(Long tradeId, User user) {
         boolean likeCheck = tradeLikeRepository.existsByUserAndTradePostId(user, tradeId);
-        TradePost post = tradePostRepository.findById(tradeId).orElseThrow(() ->
-                new CustomException(ErrorCode.NOT_EXIST_POST)
-        );
+        TradePost post = getTradePostById(tradeId);
         /* 좋아요 로직 (이미 누른 경우와 누르지 않았던 경우) */
         if (likeCheck) {
             Optional<TradeLike> like = tradeLikeRepository.findByUserAndTradePostId(user, tradeId);
@@ -189,5 +177,21 @@ public class TradeService {
             tradeLikeRepository.save(like);
             return true;
         }
+    }
+
+    /* 메서드 모음 */
+
+    private TradePost getTradePostByTradeIdAndUser(Long tradeId, User user) {
+        TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(
+                () -> new CustomException(ErrorCode.NOT_YOUR_POST)
+        );
+        return post;
+    }
+
+    private TradePost getTradePostById(Long tradeId) {
+        TradePost post = tradePostRepository.findById(tradeId).orElseThrow(() ->
+                new CustomException(ErrorCode.NOT_EXIST_POST)
+        );
+        return post;
     }
 }

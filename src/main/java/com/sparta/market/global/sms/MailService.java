@@ -21,10 +21,6 @@ public class MailService {
 
     private final JavaMailSender emailSender;
 
-    /* 한글 인코딩이 안되서, setFrom에 직접 이메일 기입 */
-    @Value("${spring.mail.from}")
-    private String from;
-
     public void sendEmail(String toEmail,
                           String title,
                           String text) {

@@ -25,7 +25,7 @@ public class CommentController {
     }
 
     @PostMapping("/{communityId}/comment")
-    @Operation(summary = "Create Comment", description = "커뮤니티 게시글에 댓글을 등록합니다.")
+    @Operation(summary = "Create Comment", description = "커뮤니티 게시글에 댓글을 등록합니다, 대댓글이 아닐 경우 parentId 값은 null 로 입력.")
     public ResponseEntity<?> createComment(@PathVariable Long communityId, @RequestBody CommentRequestDto requestDto,
                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
@@ -35,7 +35,7 @@ public class CommentController {
     }
 
     @PutMapping("/{communityId}/comment/{commentId}")
-    @Operation(summary = "Update Comment", description = "커뮤니티 게시글의 댓글을 수정합니다.")
+    @Operation(summary = "Update Comment", description = "커뮤니티 게시글의 댓글을 수정합니다, 대댓글이 아닐 경우 parentId 값은 null 로 입력.")
     public ResponseEntity<?> updateComment(@PathVariable Long communityId,
                                            @PathVariable Long commentId,
                                            @RequestBody CommentRequestDto requestDto,
@@ -47,7 +47,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{communityId}/comment/{commentId}")
-    @Operation(summary = "Delete Comment", description = "커뮤니티 게시글의 댓글을 삭제합니다.")
+    @Operation(summary = "Delete Comment", description = "커뮤니티 게시글의 댓글을 삭제합니다, 대댓글이 있을 경우 댓글 내용이 삭제된 댓글입니다로 변경 됨.")
     public ResponseEntity<?> deleteComment(@PathVariable Long communityId, @PathVariable Long commentId,
                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
@@ -57,7 +57,7 @@ public class CommentController {
     }
 
     @DeleteMapping("/{communityId}/comment/{commentId}/child/{childCommentId}")
-    @Operation(summary = "Delete Child Comment", description = "커뮤니티 게시글의 대댓글을 삭제합니다.")
+    @Operation(summary = "Delete Child Comment", description = "커뮤니티 게시글의 대댓글을 삭제합니다, 커뮤니티 아이디, 부모 댓글 아이디, 대댓글 아이디 입력 필요")
     public ResponseEntity<?> deleteChildComment(@PathVariable Long communityId,
                                                 @PathVariable Long commentId,
                                                 @PathVariable Long childCommentId,

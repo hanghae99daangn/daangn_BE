@@ -1,6 +1,7 @@
 package com.sparta.market.domain.community.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sparta.market.domain.comment.entity.Comment;
 import com.sparta.market.domain.user.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -56,6 +57,9 @@ public class Community {
     @Column
     @Schema(name = "community post user address", description = "커뮤니티 게시글 생성 유저 주소 정보")
     private String address;
+
+    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments;
 
     @Builder
     public Community(String title, String content, User user, CommunityCategory category, String address) {

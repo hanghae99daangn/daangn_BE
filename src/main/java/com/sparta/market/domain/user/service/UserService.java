@@ -7,15 +7,14 @@ import com.sparta.market.domain.user.entity.UserRoleEnum;
 import com.sparta.market.domain.user.repository.UserProfileRepository;
 import com.sparta.market.domain.user.repository.UserRepository;
 import com.sparta.market.global.aws.service.S3UploadService;
-import com.sparta.market.global.common.dto.ResponseDto;
 import com.sparta.market.global.common.exception.CustomException;
 import com.sparta.market.global.common.exception.ErrorCode;
 import com.sparta.market.global.redis.RedisUtil;
+import com.sparta.market.global.security.jwt.JwtUtil;
 import com.sparta.market.global.sms.EmailHtmlString;
 import com.sparta.market.global.sms.MailService;
 import com.sparta.market.global.sms.SmsUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +33,7 @@ public class UserService {
     private final SmsUtil smsUtil;
     private final RedisUtil redisUtil;
     private final EmailHtmlString emailHtmlString;
+    private final JwtUtil jwtUtil;
 
     public SignupResponseDto signUp(SignupRequestDto requestDto, MultipartFile multipartFile) throws IOException {
 
@@ -65,6 +65,18 @@ public class UserService {
         checkDuplicatedPhone(checkDto.getPhoneNumber());
 
         String phoneNumber = checkDto.getPhoneNumber().replaceAll(" ","");
+        String verificationCode = smsUtil.createCode();
+        redisUtil.setDataExpire(verificationCode, phoneNumber, 60*5L);
+
+        return verificationCode;
+    }
+
+    public String sendCodeToPhoneLogin(PhoneDto checkDto) {
+        String phoneNumber = checkDto.getPhoneNumber().replaceAll(" ","");
+        User user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(() ->
+                new CustomException(ErrorCode.NOT_EXIST_USER)
+        );
+
         String verificationCode = smsUtil.createCode();
         redisUtil.setDataExpire(verificationCode, phoneNumber, 60*5L);
 
@@ -103,6 +115,31 @@ public class UserService {
         } catch (NullPointerException e) {
             throw new CustomException(ErrorCode.MSG_TIME_OUT);
         }
+    }
+
+    public PhoneLoginResponseDto loginByPhone(PhoneLoginRequestDto requestDto) {
+        String phoneNumber = requestDto.getPhoneNumber().replaceAll(" ","");
+        try {
+            String result = redisUtil.getData(requestDto.getVerificationCode());
+            String token = jwtUtil.createToken(phoneNumber, UserRoleEnum.USER);
+
+            if (result.equals(phoneNumber)) {
+                User user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(()->
+                        new CustomException(ErrorCode.NOT_EXIST_USER)
+                );
+
+                if (userProfileRepository.findByUserId(user.getId()).isPresent()){
+                    UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElseThrow(()->
+                            new CustomException(ErrorCode.NOT_EXIST_IMG));
+                    return new PhoneLoginResponseDto(user, profile, token);
+                }
+
+                return new PhoneLoginResponseDto(user, token);
+            }
+        } catch (NullPointerException e) {
+            throw new CustomException(ErrorCode.MSG_TIME_OUT);
+        }
+        return null;
     }
 
     /* 검증 및 로직 메서드 */

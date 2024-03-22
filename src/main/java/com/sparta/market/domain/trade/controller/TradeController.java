@@ -64,8 +64,9 @@ public class TradeController {
     public ResponseEntity<?> getAllPostList(@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
         Page<GetPostListResponseDto> postList = tradeService.getAllPostList(page);
         return ResponseEntity.ok().body(ResponseDto.success("전체 판매글 조회 성공", postList));
+//        return postList; Page<GetPostListResponseDto>
     }
-
+// Page<GetPostListResponseDto>
     @Operation(summary = "판매글 상세 조회",
             description = "조회시, 판매글의 Id를 입력하세요!")
     @GetMapping("/trades/{tradeId}")
@@ -80,6 +81,7 @@ public class TradeController {
     public ResponseEntity<?> getCategoryPostList(@RequestParam String category, @RequestParam(value = "page", required = false, defaultValue = "1") int page){
         Page<GetCategoryPostListResponseDto> categoryList = tradeService.getCategoryPostList(category, page);
         return ResponseEntity.ok().body(ResponseDto.success("카테고리별 판매글 조회 성공", categoryList));
+//        return ResponseEntity.ok().body(categoryList);
     }
 
     @Operation(summary = "좋아요 기능",

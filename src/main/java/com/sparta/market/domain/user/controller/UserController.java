@@ -3,9 +3,6 @@ package com.sparta.market.domain.user.controller;
 import com.sparta.market.domain.user.dto.*;
 import com.sparta.market.domain.user.service.UserService;
 import com.sparta.market.global.common.dto.ResponseDto;
-import com.sparta.market.global.common.exception.ErrorCode;
-import com.sparta.market.global.redis.RedisUtil;
-import com.sparta.market.global.sms.SmsUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -41,15 +38,15 @@ public class UserController {
 //        return ResponseEntity.ok().body(ResponseDto.success("문자 전송 성공", "문자를 확인해주세요."));
 //    }
 
-    @Operation(summary = "전화번호 인증 테스트",
-            description = "010 1234 5678 형식으로 보내주세요.")
+    @Operation(summary = "회원가입 전화번호 인증",
+            description = "010 1234 5678 형식으로 보내주세요. 인증코드 전달")
     @PostMapping("/signup/send-code-phone")
     public ResponseEntity<?> sendCodeToPhone(@Valid @RequestBody PhoneDto phoneDto){
         String verificationCode = userService.sendCodeToPhone(phoneDto);
         return ResponseEntity.ok().body(ResponseDto.success("문자 전송 성공", "문자를 확인해주세요 (" + verificationCode +")"));
     }
 
-    @Operation(summary = "인증번호 검증 테스트",
+    @Operation(summary = "전화 회원가입 인증번호 검증",
             description = "010 1234 5678 형식으로 보내주세요. 전화번호 인증 테스트에서 확인한 번호를 넣어주세요.")
     @PostMapping("/signup/check-code-phone")
     public ResponseEntity<?> checkPhoneCode(@Valid @RequestBody PhoneCheckDto phoneCheckDto){
@@ -69,8 +66,8 @@ public class UserController {
         return ResponseEntity.ok().body(ResponseDto.success("이메일 전송 완료", "인증번호를 확인해주세요! (" + verificationCode + ")"));
     }
 
-    @Operation(summary = "인증번호 검증 테스트",
-            description = "010 1234 5678 형식으로 보내주세요. 전화번호 인증 테스트에서 확인한 번호를 넣어주세요.")
+    @Operation(summary = "이메일 인증번호 검증",
+            description = "이메일 형식으로 보내주세요. 이메일 인증 테스트에서 확인한 번호를 넣어주세요.")
     @PostMapping("/signup/check-code-email")
     public ResponseEntity<?> checkEmailCode(@Valid @RequestBody EmailCheckDto emailCheckDto){
         boolean result = userService.checkEmailCode(emailCheckDto);
@@ -90,8 +87,30 @@ public class UserController {
         return ResponseEntity.ok().body(ResponseDto.success("등록 성공", responseDto));
     }
 
+    /* Swagger용 API */
+    @Operation(summary = "이메일, 비밀번호 방식 (회의 필요)",
+            description = "회원가입 방식 수정 예정")
     @PostMapping("/login")
     public void login(@RequestBody LoginRequestDto requestDto) {
 
+    }
+
+    @Operation(summary = "전화번호로 로그인 (인증코드 전송)",
+            description = "전화번호 입력 -> 인증코드 전송")
+    @PostMapping("/login/send-code-phone")
+    public ResponseEntity<?> sendCodeToPhoneLogin(@Valid @RequestBody PhoneDto phoneDto) {
+        String verificationCode = userService.sendCodeToPhoneLogin(phoneDto);
+        return ResponseEntity.ok().body(ResponseDto.success("문자 전송 성공", "문자를 확인해주세요 (" + verificationCode +")"));
+    }
+
+    @Operation(summary = "전화번호로 로그인 (인증코드, 전화번호 필요)",
+            description = "인증코드와 전화번호 전송시, 검증 후 회원 정보 반환")
+    @PostMapping("/login/phone")
+    public ResponseEntity<?> loginByPhone(@RequestBody PhoneLoginRequestDto requestDto){
+        PhoneLoginResponseDto responseDto = userService.loginByPhone(requestDto);
+        if (responseDto == null) {
+            return ResponseEntity.ok().body(ResponseDto.success("로그인 실패", null));
+        }
+        return ResponseEntity.ok().body(ResponseDto.success("로그인 성공", responseDto));
     }
 }

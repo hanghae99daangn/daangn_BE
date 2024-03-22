@@ -22,7 +22,8 @@ public enum ErrorCode {
     INVALID_CATEGORY_INPUT("INVALID_CATEGORY_INPUT", "잘못된 카테고리 입력입니다.", HttpStatus.BAD_REQUEST),
     NOT_YOUR_COMMENT("NOT_YOUR_COMMENT", "해당 댓글을 작성한 유저가 아닙니다.", HttpStatus.BAD_REQUEST),
     NOT_MATCH_CODE("NOT_MATCH_CODE", "인증번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED),
-    MSG_TIME_OUT("MSG_TIME_OUT", "인증시간이 초과되었습니다.", HttpStatus.REQUEST_TIMEOUT);
+    MSG_TIME_OUT("MSG_TIME_OUT", "인증시간이 초과되었습니다.", HttpStatus.REQUEST_TIMEOUT),
+    NOT_EXIST_PROFILE("NOT_EXIST_PROFILE", "프로필사진이 없습니다", HttpStatus.BAD_REQUEST);
 
 
     private final String key;

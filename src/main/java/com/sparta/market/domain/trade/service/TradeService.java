@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -63,43 +64,42 @@ public class TradeService {
     public UpdateTradeResponseDto updateTrade(Long tradeId, UpdateTradeRequestDto requestDto, MultipartFile[] multipartFileList, User user) throws IOException {
         List<String> updateImageUrlList = new ArrayList<>();
         List<String> updateImageNameList = new ArrayList<>();
+        log.info(user.getId().toString());
 
-        /* 원래 이미지가 없던 글 + 파일도 업로드 안한 경우 */
-        if (requestDto.getImgId() == null && multipartFileList == null) {
-            TradePost post = getTradePostByTradeIdAndUser(tradeId, user);
-            post.update(requestDto);
-            return new UpdateTradeResponseDto(post);
-        }
-        /* 이미지가 없다가, 등록하는 경우 */
-        if (requestDto.getImgId() == null) {
-            TradePost post = getTradePostByTradeIdAndUser(tradeId, user);
-            post.update(requestDto);
-            saveImgToS3(multipartFileList, post, updateImageUrlList, updateImageNameList);
-            return new UpdateTradeResponseDto(post, updateImageUrlList, updateImageNameList);
-        }
-        /* 이미지가 있었고, 내용만 수정하는 경우 */
-        if (multipartFileList == null) {
-            TradePost post = getTradePostByTradeIdAndUser(tradeId, user);
-            post.update(requestDto);
-            return new UpdateTradeResponseDto(post);
-        }
-        /* 이미지를 바꾸는 경우 */
-        TradePost post = getTradePostByTradeIdAndUser(tradeId, user);
-        if (post.getPostImageList().get(0).getId() != requestDto.getImgId()) {
-            throw new CustomException(ErrorCode.NOT_YOUR_IMG);
-        }
-
-        /* 이미지 삭제 */
-        TradePostImage deletePostImage = tradePostImageRepository.findById(requestDto.getImgId()).orElseThrow(
-                () -> new CustomException(ErrorCode.NOT_EXIST_IMG)
+        TradePost tradePost = tradePostRepository.findById(tradeId).orElseThrow(() ->
+                new CustomException(ErrorCode.NOT_EXIST_POST)
         );
-        s3UploadService.deleteFile(deletePostImage.getS3name());
-        tradePostImageRepository.delete(deletePostImage);
 
-        saveImgToS3(multipartFileList, post, updateImageUrlList, updateImageNameList);
+        /* 기존에 이미지가 없었던 경우 */
+        if (requestDto.getImgId() == null) {
+            tradePost.update(requestDto);
 
-        post.update(requestDto);
-        return new UpdateTradeResponseDto(post, updateImageUrlList, updateImageNameList);
+            /* 이미지를 새로 등록하는 경우 */
+            if (multipartFileList != null) {
+                saveImgToS3(multipartFileList, tradePost, updateImageUrlList, updateImageNameList);
+                return new UpdateTradeResponseDto(tradePost, updateImageUrlList, updateImageNameList);
+            } else {
+                /* 이미지 등록이 없는 경우 */
+                return new UpdateTradeResponseDto(tradePost);
+            }
+        } else { /* 이미지가 있는 경우 */
+            List<TradePostImage> imageList = tradePostImageRepository.findAllByTradePostId(tradeId);
+
+            tradePost.update(requestDto);
+
+            /* 이미지를 바꾸는 경우 */
+            if (multipartFileList != null) {
+                /* 기존의 이미지 제거 */
+                for (TradePostImage postImage : imageList) {
+                    s3UploadService.deleteFile(postImage.getS3name());
+                    tradePostImageRepository.delete(postImage);
+                }
+                saveImgToS3(multipartFileList, tradePost, updateImageUrlList, updateImageNameList);
+                return new UpdateTradeResponseDto(tradePost, updateImageUrlList, updateImageNameList);
+            } else {
+                return new UpdateTradeResponseDto(tradePost);
+            }
+        }
     }
 
     public void deletePost(Long tradeId, User user) {
@@ -116,23 +116,6 @@ public class TradeService {
         tradePostRepository.delete(post);
     }
 
-    private void saveImgToS3(MultipartFile[] multipartFileList, TradePost tradePost, List<String> updateImageUrlList, List<String> updateImageNameList) throws IOException {
-        for (MultipartFile multipartFile : multipartFileList) {
-
-            String filename = multipartFile.getOriginalFilename();
-            String imageUrl = s3UploadService.saveFile(multipartFile, multipartFile.getOriginalFilename());
-            TradePostImage postImage = TradePostImage.builder()
-                    .url(imageUrl)
-                    .imageName(multipartFile.getOriginalFilename())
-                    .s3name(filename)
-                    .tradePost(tradePost)
-                    .build();
-            tradePostImageRepository.save(postImage);
-            updateImageUrlList.add(imageUrl);
-            updateImageNameList.add(multipartFile.getOriginalFilename());
-        }
-    }
-
     @Transactional(readOnly = true)
     public Page<GetPostListResponseDto> getAllPostList(int page) {
         int pageNum = Math.max(page - 1, 0);
@@ -141,14 +124,22 @@ public class TradeService {
         return postList.map(GetPostListResponseDto::new);
     }
 
+    @Transactional(readOnly = true)
     public Page<GetPostListResponseDto> getAllPostListByUser(int page, User user) {
         int pageNum = Math.max(page - 1, 0);
         Pageable pageable = PageRequest.of(pageNum, 30);
-        String address = user.getAddress();
-        log.info("현재 로그인한 유저의 주소" + address);
-        String dong = extractDong(address);
+        String dong = extractDong(user.getAddress());
         Page<TradePost> postList = tradePostRepository.findAllByContactPlaceContaining(dong, pageable);
         return postList.map(GetPostListResponseDto::new);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<GetCategoryPostListResponseDto> getCategoryPostList(String category, int page, User user) {
+        int pageNum = Math.max(page - 1, 0);
+        Pageable pageable = PageRequest.of(pageNum, 30);
+        String dong = extractDong(user.getAddress());
+        Page<TradePost> categoryPostList = tradePostRepository.findAllByContactPlaceContainingAndCategory(dong, category, pageable);
+        return categoryPostList.map(GetCategoryPostListResponseDto::new);
     }
 
     @Transactional
@@ -156,14 +147,6 @@ public class TradeService {
         TradePost post = getTradePostById(tradeId);
         post.updateHit();
         return new GetPostResponseDto(post);
-    }
-
-    @Transactional(readOnly = true)
-    public Page<GetCategoryPostListResponseDto> getCategoryPostList(String category, int page) {
-        int pageNum = Math.max(page - 1, 0);
-        Pageable pageable = PageRequest.of(pageNum, 30);
-        Page<TradePost> categoryPostList = tradePostRepository.findAllByCategory(category, pageable);
-        return categoryPostList.map(GetCategoryPostListResponseDto::new);
     }
 
     @Transactional
@@ -189,13 +172,22 @@ public class TradeService {
         }
     }
 
-    /* 메서드 모음 */
 
-    private TradePost getTradePostByTradeIdAndUser(Long tradeId, User user) {
-        TradePost post = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(
-                () -> new CustomException(ErrorCode.NOT_YOUR_POST)
-        );
-        return post;
+    /* 메서드 모음 */
+    private void saveImgToS3(MultipartFile[] multipartFileList, TradePost tradePost, List<String> updateImageUrlList, List<String> updateImageNameList) throws IOException {
+        for (MultipartFile multipartFile : multipartFileList) {
+            String filename = UUID.randomUUID() + multipartFile.getOriginalFilename();
+            String imageUrl = s3UploadService.saveFile(multipartFile, filename);
+            TradePostImage postImage = TradePostImage.builder()
+                    .url(imageUrl)
+                    .imageName(multipartFile.getOriginalFilename())
+                    .s3name(filename)
+                    .tradePost(tradePost)
+                    .build();
+            tradePostImageRepository.save(postImage);
+            updateImageUrlList.add(imageUrl);
+            updateImageNameList.add(multipartFile.getOriginalFilename());
+        }
     }
 
     private TradePost getTradePostById(Long tradeId) {

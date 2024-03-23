@@ -15,7 +15,7 @@ public class GetAllCommunityResponseDto {
     private Long communityId;
     private String title;
     private String nickname;
-    private String contents;
+    private String content;
     private CommunityCategory category;
     private LocalDateTime createdAt;
     private DetailCommunityImageResponseDto communityImage;
@@ -25,7 +25,7 @@ public class GetAllCommunityResponseDto {
         this.communityId = community.getCommunityId();
         this.title = community.getTitle();
         this.nickname = community.getUser().getNickname();
-        this.contents = community.getContent();
+        this.content = community.getContent();
         this.category = community.getCategory();
         this.createdAt = community.getCreatedAt();
         if (!community.getCommunityImages().isEmpty()) {

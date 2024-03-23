@@ -84,8 +84,8 @@ public class TradeController {
     @Operation(summary = "카테고리별 판매글 전체 조회",
             description = "조회시, 글에 저장된 첫 번째 이미지 출력를 출력합니다!")
     @GetMapping("/trades/category")
-    public ResponseEntity<?> getCategoryPostList(@RequestParam String category, @RequestParam(value = "page", required = false, defaultValue = "1") int page){
-        Page<GetCategoryPostListResponseDto> categoryList = tradeService.getCategoryPostList(category, page);
+    public ResponseEntity<?> getCategoryPostList(@RequestParam String category, @RequestParam(value = "page", required = false, defaultValue = "1") int page, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        Page<GetCategoryPostListResponseDto> categoryList = tradeService.getCategoryPostList(category, page, userDetails.getUser());
         return ResponseEntity.ok().body(categoryList);
     }
 

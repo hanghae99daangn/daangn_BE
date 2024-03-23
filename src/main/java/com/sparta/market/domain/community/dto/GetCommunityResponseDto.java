@@ -17,7 +17,7 @@ public class GetCommunityResponseDto {
     private Long communityId;
     private String title;
     private String nickname;
-    private String contents;
+    private String content;
     private CommunityCategory category;
     private LocalDateTime createdAt;
     private List<DetailCommunityImageResponseDto> communityImageList = new ArrayList<>();
@@ -27,7 +27,7 @@ public class GetCommunityResponseDto {
         this.communityId = community.getCommunityId();
         this.title = community.getTitle();
         this.nickname = community.getUser().getNickname();
-        this.contents = community.getContent();
+        this.content = community.getContent();
         this.category = community.getCategory();
         this.createdAt = community.getCreatedAt();
         this.communityImageList = community.getCommunityImages().stream().map(DetailCommunityImageResponseDto::new).toList();

@@ -159,7 +159,7 @@ public class CommentService {
     /* 검증 메서드 필드*/
     /*유저 정보 검증 메서드*/
     private User findAuthenticatedUser(UserDetailsImpl userDetails) {
-        return userRepository.findByEmail(userDetails.getUsername())
+        return userRepository.findByPhoneNumber(userDetails.getUsername())
                 .orElseThrow(() -> new CustomException(NOT_EXIST_USER));
     }
 

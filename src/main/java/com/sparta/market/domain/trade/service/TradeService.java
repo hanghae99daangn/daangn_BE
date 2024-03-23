@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j(topic = "tradeService")
 @Service
@@ -137,8 +139,16 @@ public class TradeService {
         Pageable pageable = PageRequest.of(pageNum, 30);
         Page<TradePost> postList = tradePostRepository.findAll(pageable);
         return postList.map(GetPostListResponseDto::new);
+    }
 
-//        return postList.stream().map(GetPostListResponseDto::new).toList();
+    public Page<GetPostListResponseDto> getAllPostListByUser(int page, User user) {
+        int pageNum = Math.max(page - 1, 0);
+        Pageable pageable = PageRequest.of(pageNum, 30);
+        String address = user.getAddress();
+        log.info("현재 로그인한 유저의 주소" + address);
+        String dong = extractDong(address);
+        Page<TradePost> postList = tradePostRepository.findAllByContactPlaceContaining(dong, pageable);
+        return postList.map(GetPostListResponseDto::new);
     }
 
     @Transactional
@@ -193,5 +203,15 @@ public class TradeService {
                 new CustomException(ErrorCode.NOT_EXIST_POST)
         );
         return post;
+    }
+
+    private String extractDong(String address) {
+        String dong = "";
+        Pattern pattern = Pattern.compile("(\\S+[동])");
+        Matcher matcher = pattern.matcher(address);
+        if (matcher.find()) {
+            dong = matcher.group();
+        }
+        return dong;
     }
 }

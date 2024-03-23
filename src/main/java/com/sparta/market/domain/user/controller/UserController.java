@@ -2,6 +2,7 @@ package com.sparta.market.domain.user.controller;
 
 import com.sparta.market.domain.user.dto.*;
 import com.sparta.market.domain.user.service.UserService;
+import com.sparta.market.global.common.dto.ResponseDto;
 import com.sparta.market.global.security.config.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,23 +25,16 @@ public class UserController {
 
     private final UserService userService;
 
-    /* SMS 인증문자 전송시 필요 (실제 구현)
-    @Operation(summary = "전화번호 인증",
-            description = "010 1234 5678 형식으로 보내주세요. 한 건에 20원입니다 ㅠㅠ")
+
+    @Operation(summary = "회원가입 전화번호 인증 (실제로 보내지는 API)",
+            description = "010 1234 5678 형식으로 보내주세요. 실제로 전송이 되므로, 사용시 주의")
     @PostMapping("/signup/phone")
-    public ResponseEntity<?> phoneCheck(@RequestBody PhoneCheckDto checkDto){
-        String phoneNumber = checkDto.getPhoneNumber().replaceAll(" ","");
-        String verificationCode = smsUtil.createCode();
-        smsUtil.sendOne(phoneNumber, verificationCode);
-
-        redisUtil.setDataExpire(verificationCode, phoneNumber, 60 * 5L);
-
-        redisUtil.getData(verificationCode);
-
+    public ResponseEntity<?> phoneCheck(@RequestBody PhoneDto checkDto){
+        userService.sendSms(checkDto);
         return ResponseEntity.ok().body(ResponseDto.success("문자 전송 성공", "문자를 확인해주세요."));
-    }*/
+    }
 
-    @Operation(summary = "회원가입 전화번호 인증",
+    @Operation(summary = "회원가입 전화번호 인증 (verificationCode 보여주는 API)",
             description = "010 1234 5678 형식으로 보내주세요. 인증코드 전달")
     @PostMapping("/signup/send-code-phone")
     public ResponseEntity<?> sendCodeToPhone(@Valid @RequestBody PhoneDto phoneDto){
@@ -109,7 +103,7 @@ public class UserController {
     @Operation(summary = "프로필 사진 삭제",
             description = "삭제할 경우, response - null 4개")
     @DeleteMapping("/delete-profile/{profileId}")
-    public ResponseEntity<?> deleteTrade(@PathVariable Long profileId, @AuthenticationPrincipal UserDetailsImpl userDetails){
+    public ResponseEntity<?> deleteProfile(@PathVariable Long profileId, @AuthenticationPrincipal UserDetailsImpl userDetails){
         UserResponseDto responseDto = userService.deleteProfile(profileId, userDetails.getUser());
         return ResponseEntity.ok().body(responseDto);
     }

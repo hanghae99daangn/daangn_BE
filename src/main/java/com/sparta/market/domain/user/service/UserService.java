@@ -131,17 +131,17 @@ public class UserService {
                     new CustomException(ErrorCode.NOT_EXIST_PROFILE)
             );
 
-             /*기존 프로필 삭제 처리*/
-            s3UploadService.deleteFile(updateProfile.getS3name());
             findUser.update(requestDto);
 
             if (multipartFile != null) {
+                /*기존 프로필 삭제 처리*/
+                s3UploadService.deleteFile(updateProfile.getS3name());
                 String filename = multipartFile.getOriginalFilename();
                 String imageUrl = s3UploadService.saveFile(multipartFile, multipartFile.getOriginalFilename());
                 updateProfile.update(multipartFile.getOriginalFilename(), filename, imageUrl);
                 return new UserResponseDto(findUser, updateProfile);
             } else {
-                return new UserResponseDto(findUser);
+                return new UserResponseDto(findUser, updateProfile);
             }
         }
     }
@@ -172,6 +172,14 @@ public class UserService {
         userProfileRepository.delete(profile);
 
         return new UserResponseDto(findUser);
+    }
+
+    public void sendSms(PhoneDto checkDto) {
+        String phoneNumber = checkDto.getPhoneNumber().replaceAll(" ","");
+        String verificationCode = smsUtil.createCode();
+        smsUtil.sendOne(phoneNumber, verificationCode);
+        redisUtil.setDataExpire(verificationCode, phoneNumber, 60 * 5L);
+        redisUtil.getData(verificationCode);
     }
 
     /* 검증 및 로직 메서드 */

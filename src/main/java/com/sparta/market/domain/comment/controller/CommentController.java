@@ -3,7 +3,6 @@ package com.sparta.market.domain.comment.controller;
 import com.sparta.market.domain.comment.dto.CommentRequestDto;
 import com.sparta.market.domain.comment.dto.CommentResponseDto;
 import com.sparta.market.domain.comment.service.CommentService;
-import com.sparta.market.global.common.dto.ResponseDto;
 import com.sparta.market.global.security.config.UserDetailsImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

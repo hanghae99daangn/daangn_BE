@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -45,15 +46,7 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         if (multipartFile != null) {
-            String filename = multipartFile.getOriginalFilename();
-            String imageUrl = s3UploadService.saveFile(multipartFile, multipartFile.getOriginalFilename());
-            UserProfile userProfile = UserProfile.builder()
-                    .url(imageUrl)
-                    .imageName(multipartFile.getOriginalFilename())
-                    .s3name(filename)
-                    .user(user)
-                    .build();
-            UserProfile savedUserProfile = userProfileRepository.save(userProfile);
+            UserProfile savedUserProfile = saveImgToS3(multipartFile, user);
             return new UserResponseDto(savedUser, savedUserProfile);
         }
 
@@ -113,15 +106,7 @@ public class UserService {
             findUser.update(requestDto);
 
             if (multipartFile != null) {
-                String filename = multipartFile.getOriginalFilename();
-                String imageUrl = s3UploadService.saveFile(multipartFile, multipartFile.getOriginalFilename());
-                UserProfile userProfile = UserProfile.builder()
-                        .url(imageUrl)
-                        .imageName(multipartFile.getOriginalFilename())
-                        .s3name(filename)
-                        .user(findUser)
-                        .build();
-                UserProfile savedUserProfile = userProfileRepository.save(userProfile);
+                UserProfile savedUserProfile = saveImgToS3(multipartFile, findUser);
                 return new UserResponseDto(findUser, savedUserProfile);
             } else {
                 return new UserResponseDto(findUser);
@@ -182,7 +167,20 @@ public class UserService {
         redisUtil.getData(verificationCode);
     }
 
+
     /* 검증 및 로직 메서드 */
+    private UserProfile saveImgToS3(MultipartFile multipartFile, User user) throws IOException {
+        String filename = UUID.randomUUID() + multipartFile.getOriginalFilename();
+        String imageUrl = s3UploadService.saveFile(multipartFile, filename);
+        UserProfile userProfile = UserProfile.builder()
+                .url(imageUrl)
+                .imageName(multipartFile.getOriginalFilename())
+                .s3name(filename)
+                .user(user)
+                .build();
+        UserProfile savedUserProfile = userProfileRepository.save(userProfile);
+        return savedUserProfile;
+    }
 
     private void checkDuplicatedEmail(String email) {
         if (userRepository.findByEmail(email).isPresent()) {

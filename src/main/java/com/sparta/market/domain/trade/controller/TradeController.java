@@ -56,11 +56,20 @@ public class TradeController {
         return ResponseEntity.ok().body("삭제가 완료되었습니다.");
     }
 
-    @Operation(summary = "판매글 전체 조회",
+    @Operation(summary = "회원이 아닌 경우 페이지 전체 뿌리기",
             description = "조회시, 글에 저장된 첫 번째 이미지 출력를 출력합니다!")
-    @GetMapping("/trades")
+    @GetMapping("/trades/default")
     public ResponseEntity<?> getAllPostList(@RequestParam(value = "page", required = false, defaultValue = "1") int page) {
         Page<GetPostListResponseDto> postList = tradeService.getAllPostList(page);
+        return ResponseEntity.ok().body(postList);
+    }
+
+    @Operation(summary = "회원의 동네 판매 리스트",
+            description = "조회시, 글에 저장된 첫 번째 이미지 출력를 출력합니다!")
+    @GetMapping("/trades")
+    public ResponseEntity<?> getAllPostListByUser(@RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        Page<GetPostListResponseDto> postList = tradeService.getAllPostListByUser(page, userDetails.getUser());
         return ResponseEntity.ok().body(postList);
     }
 

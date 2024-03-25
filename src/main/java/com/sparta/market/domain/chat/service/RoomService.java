@@ -70,7 +70,7 @@ public class RoomService {
         return chatRoom;
     }
 
-    // 채팅방 존재 검증
+    /* 채팅방 존재 검증*/
     private ChatRoom findExistRoom(long roomId) {
         Optional<ChatRoom> optionalChatRoom = roomRepository.findById(roomId);
 

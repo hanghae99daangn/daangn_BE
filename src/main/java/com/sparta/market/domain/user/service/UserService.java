@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
@@ -34,6 +33,17 @@ public class UserService {
     private final SmsUtil smsUtil;
     private final RedisUtil redisUtil;
     private final EmailHtmlString emailHtmlString;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, S3UploadService s3UploadService, UserProfileRepository userProfileRepository, MailService mailService, SmsUtil smsUtil, RedisUtil redisUtil, EmailHtmlString emailHtmlString) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.s3UploadService = s3UploadService;
+        this.userProfileRepository = userProfileRepository;
+        this.mailService = mailService;
+        this.smsUtil = smsUtil;
+        this.redisUtil = redisUtil;
+        this.emailHtmlString = emailHtmlString;
+    }
 
     public UserResponseDto signUp(SignupRequestDto requestDto, MultipartFile multipartFile) throws IOException {
 

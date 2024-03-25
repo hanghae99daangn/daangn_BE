@@ -33,12 +33,18 @@ import java.util.regex.Pattern;
 
 @Slf4j(topic = "tradeService")
 @Service
-@RequiredArgsConstructor
 public class TradeService {
     private final TradePostRepository tradePostRepository;
     private final S3UploadService s3UploadService;
     private final TradePostImageRepository tradePostImageRepository;
     private final TradeLikeRepository tradeLikeRepository;
+
+    public TradeService(TradePostRepository tradePostRepository, S3UploadService s3UploadService, TradePostImageRepository tradePostImageRepository, TradeLikeRepository tradeLikeRepository) {
+        this.tradePostRepository = tradePostRepository;
+        this.s3UploadService = s3UploadService;
+        this.tradePostImageRepository = tradePostImageRepository;
+        this.tradeLikeRepository = tradeLikeRepository;
+    }
 
 
     @Transactional

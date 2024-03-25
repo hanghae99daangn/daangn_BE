@@ -13,11 +13,14 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "로그인 API", description = "로그인")
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/user")
 public class LoginController {
 
     private final LoginService loginService;
+
+    public LoginController(LoginService loginService) {
+        this.loginService = loginService;
+    }
 
     @Operation(summary = "전화번호로 로그인 (인증코드 전송)",
             description = "전화번호 입력 -> 인증코드 전송")

@@ -19,11 +19,14 @@ import java.io.IOException;
 
 @Tag(name = "회원 API", description = "회원가입, 회원정보수정")
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
 
     @Operation(summary = "회원가입 전화번호 인증 (실제로 보내지는 API)",

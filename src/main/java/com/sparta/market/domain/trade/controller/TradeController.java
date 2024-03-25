@@ -22,10 +22,13 @@ import java.io.IOException;
 @Tag(name = "거래글 API", description = "거래글 CRUD")
 @Slf4j(topic = "거래글 로그")
 @RestController
-@RequiredArgsConstructor
 public class TradeController {
 
     private final TradeService tradeService;
+
+    public TradeController(TradeService tradeService) {
+        this.tradeService = tradeService;
+    }
 
     @Operation(summary = "게시글 등록",
             description = "게시글 등록 -> add String Item을 클릭해서 이미지를 업로드하세요!")

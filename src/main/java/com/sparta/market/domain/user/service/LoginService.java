@@ -21,18 +21,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-@RequiredArgsConstructor
 public class LoginService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final S3UploadService s3UploadService;
     private final UserProfileRepository userProfileRepository;
-    private final MailService mailService;
     private final SmsUtil smsUtil;
     private final RedisUtil redisUtil;
-    private final EmailHtmlString emailHtmlString;
     private final JwtUtil jwtUtil;
+
+    public LoginService(UserRepository userRepository, UserProfileRepository userProfileRepository, SmsUtil smsUtil, RedisUtil redisUtil, JwtUtil jwtUtil) {
+        this.userRepository = userRepository;
+        this.userProfileRepository = userProfileRepository;
+        this.smsUtil = smsUtil;
+        this.redisUtil = redisUtil;
+        this.jwtUtil = jwtUtil;
+    }
 
     public String sendCodeToPhoneLogin(PhoneDto checkDto) {
         String phoneNumber = checkDto.getPhoneNumber().replaceAll(" ","");

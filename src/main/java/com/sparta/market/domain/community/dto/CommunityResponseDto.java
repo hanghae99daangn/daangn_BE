@@ -14,7 +14,7 @@ public class CommunityResponseDto {
     private Long communityId;
     private String title;
     private String nickname;
-    private String contents;
+    private String content;
     private CommunityCategory category;
     private LocalDateTime createdAt;
     private String address;
@@ -26,7 +26,7 @@ public class CommunityResponseDto {
         this.communityId = community.getCommunityId();
         this.title = community.getTitle();
         this.nickname = community.getUser().getNickname();
-        this.contents = community.getContent();
+        this.content = community.getContent();
         this.category = community.getCategory();
         this.createdAt = community.getCreatedAt();
         this.address = community.getAddress();
@@ -37,7 +37,7 @@ public class CommunityResponseDto {
         this.communityId = community.getCommunityId();
         this.title = community.getTitle();
         this.nickname = community.getUser().getNickname();
-        this.contents = community.getContent();
+        this.content = community.getContent();
         this.category = community.getCategory();
         this.createdAt = community.getCreatedAt();
         this.address = community.getAddress();

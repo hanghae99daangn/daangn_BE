@@ -70,7 +70,7 @@ public class UserController {
         if (result) {
             return ResponseEntity.ok().body("인증번호가 일치합니다.");
         } else {
-            return ResponseEntity.ok().body("인증번호가 일치하지 않습니다.");
+            return ResponseEntity.badRequest().body("인증번호가 일치하지 않습니다.");
         }
     }
 

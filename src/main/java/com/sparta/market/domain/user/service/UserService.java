@@ -149,9 +149,16 @@ public class UserService {
         User findUser = userRepository.findById(user.getId()).orElseThrow(()->
                 new CustomException(ErrorCode.NOT_EXIST_USER)
         );
+        UserProfile userProfile = userProfileRepository.findByUserId(user.getId()).orElseThrow(() ->
+                new CustomException(ErrorCode.NOT_EXIST_PROFILE)
+        );
         UserProfile profile = userProfileRepository.findById(profileId).orElseThrow(()->
                 new CustomException(ErrorCode.NOT_EXIST_PROFILE)
         );
+        if (profile.getUser().getId() != userProfile.getUser().getId()) {
+            throw new CustomException(ErrorCode.NOT_YOUR_IMG);
+        }
+
 
         s3UploadService.deleteFile(profile.getS3name());
         userProfileRepository.delete(profile);

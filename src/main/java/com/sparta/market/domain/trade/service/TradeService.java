@@ -66,8 +66,8 @@ public class TradeService {
         List<String> updateImageNameList = new ArrayList<>();
         log.info(user.getId().toString());
 
-        TradePost tradePost = tradePostRepository.findById(tradeId).orElseThrow(() ->
-                new CustomException(ErrorCode.NOT_EXIST_POST)
+        TradePost tradePost = tradePostRepository.findByIdAndUser(tradeId, user).orElseThrow(() ->
+                new CustomException(ErrorCode.NOT_YOUR_POST)
         );
 
         /* 기존에 이미지가 없었던 경우 */
@@ -129,7 +129,7 @@ public class TradeService {
         int pageNum = Math.max(page - 1, 0);
         Pageable pageable = PageRequest.of(pageNum, 30);
         String dong = extractDong(user.getAddress());
-        Page<TradePost> postList = tradePostRepository.findAllByContactPlaceContaining(dong, pageable);
+        Page<TradePost> postList = tradePostRepository.findAllByContactPlaceContainingOrderByCreatedAtDesc(dong, pageable);
         return postList.map(GetPostListResponseDto::new);
     }
 
@@ -138,7 +138,8 @@ public class TradeService {
         int pageNum = Math.max(page - 1, 0);
         Pageable pageable = PageRequest.of(pageNum, 30);
         String dong = extractDong(user.getAddress());
-        Page<TradePost> categoryPostList = tradePostRepository.findAllByContactPlaceContainingAndCategory(dong, category, pageable);
+        Page<TradePost> categoryPostList = tradePostRepository.
+                findAllByContactPlaceContainingAndCategoryOrderByCreatedAtDesc(dong, category, pageable);
         return categoryPostList.map(GetCategoryPostListResponseDto::new);
     }
 

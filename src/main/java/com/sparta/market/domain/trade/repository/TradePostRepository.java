@@ -15,9 +15,9 @@ public interface TradePostRepository extends JpaRepository<TradePost, Long> {
 
     Page<TradePost> findAllByCategory(String category, Pageable page);
 
-    Page<TradePost> findAllByContactPlaceContaining(String dong, Pageable page);
+    Page<TradePost> findAllByContactPlaceContainingOrderByCreatedAtDesc(String dong, Pageable page);
 
-    Page<TradePost> findAllByContactPlaceContainingAndCategory(String dong, String category, Pageable page);
+    Page<TradePost> findAllByContactPlaceContainingAndCategoryOrderByCreatedAtDesc(String dong, String category, Pageable page);
 
 
 }

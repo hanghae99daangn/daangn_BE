@@ -1,5 +1,6 @@
 package com.sparta.market.domain.user.entity;
 
+import com.sparta.market.domain.user.dto.UserRequestDto;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor // Lombok에서 가져옴. 파라미터가 없는 기본 생성자를 만들어준다.
+@NoArgsConstructor
 @Table(name = "users")
 @Builder
 @AllArgsConstructor
@@ -17,10 +18,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column (nullable = false, unique = true)
+    @Column (unique = true)
     private String email;
 
-    @Column (nullable = false)
     private String password;
 
     @Column (nullable = false)
@@ -36,19 +36,10 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserRoleEnum role;
 
-    /*커뮤니티 게시글 테스트용 Builder 코드*/
-    @Builder
-    public User (String email) {
-        this.email = email;
-    }
-    @Builder
-    public User (Long id) {
-        this.id = id;
-    }
-
-    @Builder
-    public User(Long id, String nickname) {
-        this.id = id;
-        this.nickname = nickname;
+    public void update(UserRequestDto requestDto) {
+        this.nickname = requestDto.getNickname();
+        this.address = requestDto.getAddress();
+        this.email = requestDto.getEmail();
+        this.phoneNumber = requestDto.getPhoneNumber();
     }
 }

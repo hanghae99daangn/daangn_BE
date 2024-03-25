@@ -10,16 +10,17 @@ import com.sparta.market.global.aws.service.S3UploadService;
 import com.sparta.market.global.common.exception.CustomException;
 import com.sparta.market.global.common.exception.ErrorCode;
 import com.sparta.market.global.redis.RedisUtil;
-import com.sparta.market.global.security.jwt.JwtUtil;
 import com.sparta.market.global.sms.EmailHtmlString;
 import com.sparta.market.global.sms.MailService;
 import com.sparta.market.global.sms.SmsUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +34,8 @@ public class UserService {
     private final SmsUtil smsUtil;
     private final RedisUtil redisUtil;
     private final EmailHtmlString emailHtmlString;
-    private final JwtUtil jwtUtil;
 
-    public SignupResponseDto signUp(SignupRequestDto requestDto, MultipartFile multipartFile) throws IOException {
+    public UserResponseDto signUp(SignupRequestDto requestDto, MultipartFile multipartFile) throws IOException {
 
         checkDuplicatedEmail(requestDto.getEmail());
         checkDuplicatedPhone(requestDto.getPhoneNumber());
@@ -46,37 +46,17 @@ public class UserService {
         User savedUser = userRepository.save(user);
 
         if (multipartFile != null) {
-            String filename = multipartFile.getOriginalFilename();
-            String imageUrl = s3UploadService.saveFile(multipartFile, multipartFile.getOriginalFilename());
-            UserProfile userProfile = UserProfile.builder()
-                    .url(imageUrl)
-                    .imageName(multipartFile.getOriginalFilename())
-                    .s3name(filename)
-                    .user(user)
-                    .build();
-            UserProfile savedUserProfile = userProfileRepository.save(userProfile);
-            return new SignupResponseDto(savedUser, savedUserProfile);
+            UserProfile savedUserProfile = saveImgToS3(multipartFile, user);
+            return new UserResponseDto(savedUser, savedUserProfile);
         }
 
-        return new SignupResponseDto(savedUser);
+        return new UserResponseDto(savedUser);
     }
 
     public String sendCodeToPhone(PhoneDto checkDto) {
         checkDuplicatedPhone(checkDto.getPhoneNumber());
 
         String phoneNumber = checkDto.getPhoneNumber().replaceAll(" ","");
-        String verificationCode = smsUtil.createCode();
-        redisUtil.setDataExpire(verificationCode, phoneNumber, 60*5L);
-
-        return verificationCode;
-    }
-
-    public String sendCodeToPhoneLogin(PhoneDto checkDto) {
-        String phoneNumber = checkDto.getPhoneNumber().replaceAll(" ","");
-        User user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(() ->
-                new CustomException(ErrorCode.NOT_EXIST_USER)
-        );
-
         String verificationCode = smsUtil.createCode();
         redisUtil.setDataExpire(verificationCode, phoneNumber, 60*5L);
 
@@ -117,32 +97,97 @@ public class UserService {
         }
     }
 
-    public PhoneLoginResponseDto loginByPhone(PhoneLoginRequestDto requestDto) {
-        String phoneNumber = requestDto.getPhoneNumber().replaceAll(" ","");
-        try {
-            String result = redisUtil.getData(requestDto.getVerificationCode());
-            String token = jwtUtil.createToken(phoneNumber, UserRoleEnum.USER);
+    @Transactional
+    public UserResponseDto updateUser(User user, UserRequestDto requestDto, MultipartFile multipartFile) throws IOException {
+        User findUser = userRepository.findById(requestDto.getId()).orElseThrow();
 
-            if (result.equals(phoneNumber)) {
-                User user = userRepository.findByPhoneNumber(phoneNumber).orElseThrow(()->
-                        new CustomException(ErrorCode.NOT_EXIST_USER)
-                );
+        /*사용자의 프로필 ID가 없는 경우*/
+        if (requestDto.getProfileId() == null) {
+            findUser.update(requestDto);
 
-                if (userProfileRepository.findByUserId(user.getId()).isPresent()){
-                    UserProfile profile = userProfileRepository.findByUserId(user.getId()).orElseThrow(()->
-                            new CustomException(ErrorCode.NOT_EXIST_IMG));
-                    return new PhoneLoginResponseDto(user, profile, token);
-                }
-
-                return new PhoneLoginResponseDto(user, token);
+            if (multipartFile != null) {
+                UserProfile savedUserProfile = saveImgToS3(multipartFile, findUser);
+                return new UserResponseDto(findUser, savedUserProfile);
+            } else {
+                return new UserResponseDto(findUser);
             }
-        } catch (NullPointerException e) {
-            throw new CustomException(ErrorCode.MSG_TIME_OUT);
+        } else { /* 사용자의 프로필 ID가 있는 경우 */
+            UserProfile updateProfile = userProfileRepository.findByUserId(requestDto.getId()).orElseThrow(()->
+                    new CustomException(ErrorCode.NOT_EXIST_PROFILE)
+            );
+
+            findUser.update(requestDto);
+
+            if (multipartFile != null) {
+                /*기존 프로필 삭제 처리*/
+                s3UploadService.deleteFile(updateProfile.getS3name());
+                String filename = multipartFile.getOriginalFilename();
+                String imageUrl = s3UploadService.saveFile(multipartFile, multipartFile.getOriginalFilename());
+                updateProfile.update(multipartFile.getOriginalFilename(), filename, imageUrl);
+                return new UserResponseDto(findUser, updateProfile);
+            } else {
+                return new UserResponseDto(findUser, updateProfile);
+            }
         }
-        return null;
     }
 
+    public UserResponseDto userInfo(User user) {
+        User findUser = userRepository.findById(user.getId()).orElseThrow(()->
+                new CustomException(ErrorCode.NOT_EXIST_USER)
+        );
+        UserProfile userProfile;
+        if (userProfileRepository.findByUserId(user.getId()).isPresent()){
+            userProfile = userProfileRepository.findByUserId(user.getId()).orElseThrow(() ->
+                    new CustomException(ErrorCode.NOT_EXIST_PROFILE)
+            );
+            return new UserResponseDto(findUser, userProfile);
+        }
+        return new UserResponseDto(findUser);
+    }
+
+    public UserResponseDto deleteProfile(Long profileId, User user) {
+        User findUser = userRepository.findById(user.getId()).orElseThrow(()->
+                new CustomException(ErrorCode.NOT_EXIST_USER)
+        );
+        UserProfile userProfile = userProfileRepository.findByUserId(user.getId()).orElseThrow(() ->
+                new CustomException(ErrorCode.NOT_EXIST_PROFILE)
+        );
+        UserProfile profile = userProfileRepository.findById(profileId).orElseThrow(()->
+                new CustomException(ErrorCode.NOT_EXIST_PROFILE)
+        );
+        if (profile.getUser().getId() != userProfile.getUser().getId()) {
+            throw new CustomException(ErrorCode.NOT_YOUR_IMG);
+        }
+
+
+        s3UploadService.deleteFile(profile.getS3name());
+        userProfileRepository.delete(profile);
+
+        return new UserResponseDto(findUser);
+    }
+
+    public void sendSms(PhoneDto checkDto) {
+        String phoneNumber = checkDto.getPhoneNumber().replaceAll(" ","");
+        String verificationCode = smsUtil.createCode();
+        smsUtil.sendOne(phoneNumber, verificationCode);
+        redisUtil.setDataExpire(verificationCode, phoneNumber, 60 * 5L);
+        redisUtil.getData(verificationCode);
+    }
+
+
     /* 검증 및 로직 메서드 */
+    private UserProfile saveImgToS3(MultipartFile multipartFile, User user) throws IOException {
+        String filename = UUID.randomUUID() + multipartFile.getOriginalFilename();
+        String imageUrl = s3UploadService.saveFile(multipartFile, filename);
+        UserProfile userProfile = UserProfile.builder()
+                .url(imageUrl)
+                .imageName(multipartFile.getOriginalFilename())
+                .s3name(filename)
+                .user(user)
+                .build();
+        UserProfile savedUserProfile = userProfileRepository.save(userProfile);
+        return savedUserProfile;
+    }
 
     private void checkDuplicatedEmail(String email) {
         if (userRepository.findByEmail(email).isPresent()) {
@@ -151,6 +196,7 @@ public class UserService {
     }
 
     private void checkDuplicatedPhone(String phoneNumber) {
+        phoneNumber = phoneNumber.replace(" ","");
         if (userRepository.findByPhoneNumber(phoneNumber).isPresent()) {
             throw new CustomException(ErrorCode.DUPLICATED_PHONE_NUMBER);
         }

@@ -14,6 +14,8 @@ public class PhoneLoginResponseDto {
     private String nickname;
     private String phoneNumber;
     private String email;
+    private String address;
+    private String dong;
     private Long profileId;
     private String imageName;
     private String s3Name;
@@ -25,6 +27,13 @@ public class PhoneLoginResponseDto {
         this.nickname = user.getNickname();
         this.phoneNumber = user.getPhoneNumber();
         this.email = user.getEmail();
+        this.address = user.getAddress();
+        String[] parts = this.address.split(" ");
+        if (parts.length > 0) {
+            this.dong = parts[parts.length - 1];
+        } else {
+            this.dong = "";
+        }
         this.authorization = token;
     }
     public PhoneLoginResponseDto(User user, UserProfile userProfile, String token) {
@@ -32,6 +41,13 @@ public class PhoneLoginResponseDto {
         this.nickname = user.getNickname();
         this.phoneNumber = user.getPhoneNumber();
         this.email = user.getEmail();
+        this.address = user.getAddress();
+        String[] parts = this.address.split(" ");
+        if (parts.length > 0) {
+            this.dong = parts[parts.length - 1];
+        } else {
+            this.dong = "";
+        }
         this.profileId = userProfile.getId();
         this.imageName = userProfile.getImageName();
         this.s3Name = userProfile.getS3name();

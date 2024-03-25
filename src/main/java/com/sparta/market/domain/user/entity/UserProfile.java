@@ -23,4 +23,10 @@ public class UserProfile {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public void update(String imageName, String s3name, String url) {
+        this.imageName = imageName;
+        this.s3name = s3name;
+        this.url = url;
+    }
 }

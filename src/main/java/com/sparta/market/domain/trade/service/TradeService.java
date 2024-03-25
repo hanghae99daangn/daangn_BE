@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j(topic = "tradeService")
@@ -83,7 +84,7 @@ public class TradeService {
         }
         /* 이미지를 바꾸는 경우 */
         TradePost post = getTradePostByTradeIdAndUser(tradeId, user);
-        if (post.getPostImageList().get(0).getId() != requestDto.getImgId()) {
+        if (!Objects.equals(post.getPostImageList().get(0).getId(), requestDto.getImgId())) {
             throw new CustomException(ErrorCode.NOT_YOUR_IMG);
         }
 

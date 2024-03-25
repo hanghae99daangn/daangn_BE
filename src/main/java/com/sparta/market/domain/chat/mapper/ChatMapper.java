@@ -18,7 +18,7 @@ public interface ChatMapper {
     @Mapping(source = "UserProfile.id", target = "UserProfile.id")
     @Mapping(source = "UserProfile.imageName", target = "UserProfile.imageName")
     @Mapping(source = "UserProfile.url", target = "UserProfile.url")
-    UserDto.ResponseOnlyUserName memberToUserNameResponseDto(User user);
+    UserDto.ResponseOnlyUserName userToUserNameResponseDto(User user);
 
     ChatDto.RoomResponse chatRoomToRoomResponseDto(ChatRoom chatRoom);
     List<ChatDto.RoomResponse> chatRoomListToRoomResponseDtos(List<ChatRoom> chatRooms);
